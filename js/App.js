@@ -313,7 +313,7 @@ var GameConfig = (function (_super) {
                         type: GameEvent.ON_JOIN_CHANNEL
                     });
                     if (GameConfig.gameActor == "LEADER") {
-                        console.log(GameConfig.tmpMebmerUrl + result.key);
+                        console.log(window.location.href + "?key=" + result.key);
                     }
                     this.toKeepConnect();
                 }
@@ -326,14 +326,14 @@ var GameConfig = (function (_super) {
                     }
                     if (!GameConfig.isChannelLocked) {
                         GameConfig.toSetMemberStatus(result.memberId - 1, 1);
-                        if (GameConfig.gameActor == "LEADER") {
-                            this.toConnectSocket({
-                                key: GameConfig.channelKey,
-                                act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                                channelLocked: GameConfig.isChannelLocked,
-                                channelMembers: GameConfig.channelMembers
-                            });
-                        }
+                    }
+                    if (GameConfig.gameActor == "LEADER") {
+                        this.toConnectSocket({
+                            key: GameConfig.channelKey,
+                            act: SocketEvent.UPDATE_CHANNEL_STATUS,
+                            channelLocked: GameConfig.isChannelLocked,
+                            channelMembers: GameConfig.channelMembers
+                        });
                     }
                     this.emit(GameEvent.ON_CHANNEL_STATUS, {
                         type: GameEvent.ON_CHANNEL_STATUS
@@ -519,7 +519,6 @@ var GameConfig = (function (_super) {
         return total == GameConfig.totalMembers ? true : false;
     };
     GameConfig.channelKey = "";
-    GameConfig.tmpMebmerUrl = "http://localhost:8888/Project/Taroko/SuzukaGame/20160120_Suzuka_LEADER/index.html?key=";
     return GameConfig;
 })(PIXI.Container);
 /**
@@ -1935,8 +1934,6 @@ var App;
         window["PixiConfig"] = Config;
         GameConfig.toInit();
         GameConfig.toSetMemberStatus(0, 1);
-        console.log(GameConfig.tmpMembers);
-        console.log(GameConfig.toGetMemberStatus(0) + "/" + typeof GameConfig.toGetMemberStatus(0));
         App.gameConfig = GameConfig.instance();
         App.gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
         App.gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
@@ -1955,6 +1952,10 @@ var App;
             toCreatePage(0, 0);
         }
         if (event.type == GameEvent.ON_CHANNEL_STATUS) {
+            if (GameConfig.toGetMemberStatus(GameConfig.gameId) == 0) {
+                alert("Channel已開始，無法加入");
+                toCreatePage(0, 0);
+            }
             if (GameConfig.isWaiting == false) {
                 if (GameConfig.gameActor == "LEADER") {
                     /* ChannelView > KeyStep */

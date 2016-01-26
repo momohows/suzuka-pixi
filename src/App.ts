@@ -77,8 +77,6 @@ module App {
 
         GameConfig.toInit();
         GameConfig.toSetMemberStatus(0, 1);
-        console.log(GameConfig.tmpMembers);
-        console.log(GameConfig.toGetMemberStatus(0) + "/" + typeof GameConfig.toGetMemberStatus(0));
 
         gameConfig = GameConfig.instance();
         gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
@@ -107,6 +105,12 @@ module App {
 
 
         if (event.type == GameEvent.ON_CHANNEL_STATUS) {
+
+            if (GameConfig.toGetMemberStatus(GameConfig.gameId) == 0) {
+
+                alert("Channel已開始，無法加入");
+                toCreatePage(0, 0);
+            }
 
             if (GameConfig.isWaiting == false) {
 

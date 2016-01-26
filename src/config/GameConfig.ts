@@ -18,8 +18,6 @@ class GameConfig extends PIXI.Container {
     public static channelMembers:string;
     public static memberData:Array<any>;
 
-    public static tmpMebmerUrl:string = "http://localhost:8888/Project/Taroko/SuzukaGame/20160120_Suzuka_LEADER/index.html?key=";
-
     private static socketConnector:SocketConnector;
 
     constructor() {
@@ -130,7 +128,7 @@ class GameConfig extends PIXI.Container {
                     });
 
                     if (GameConfig.gameActor == "LEADER") {
-                        console.log(GameConfig.tmpMebmerUrl + result.key);
+                        console.log(window.location.href + "?key=" + result.key);
                     }
                     this.toKeepConnect();
                 }
@@ -146,16 +144,16 @@ class GameConfig extends PIXI.Container {
                     }
 
                     if (!GameConfig.isChannelLocked) {
-
                         GameConfig.toSetMemberStatus(result.memberId - 1, 1);
-                        if (GameConfig.gameActor == "LEADER") {
-                            this.toConnectSocket({
-                                key: GameConfig.channelKey,
-                                act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                                channelLocked: GameConfig.isChannelLocked,
-                                channelMembers: GameConfig.channelMembers
-                            });
-                        }
+                    }
+
+                    if (GameConfig.gameActor == "LEADER") {
+                        this.toConnectSocket({
+                            key: GameConfig.channelKey,
+                            act: SocketEvent.UPDATE_CHANNEL_STATUS,
+                            channelLocked: GameConfig.isChannelLocked,
+                            channelMembers: GameConfig.channelMembers
+                        });
                     }
 
                     this.emit(GameEvent.ON_CHANNEL_STATUS, {
