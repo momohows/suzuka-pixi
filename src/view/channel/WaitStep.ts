@@ -46,6 +46,7 @@ class WaitStep extends AbstractStepView {
         this.totalText.y += 50;
         this.addChild(this.totalText);
 
+        App.gameConfig.on(GameEvent.ON_JOIN_CHANNEL, this.onGameConfigStatus.bind(this));
         App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
 
         this.toUpdate();
@@ -53,6 +54,16 @@ class WaitStep extends AbstractStepView {
     }
 
     private onGameConfigStatus(event:any):void {
+
+        if (event.type == GameEvent.ON_JOIN_CHANNEL) {
+            console.log("WaitView.ON_JOIN_CHANNEL");
+            App.gameConfig.toConnectSocket({
+                key: GameConfig.channelKey,
+                memberId: GameConfig.gameId,
+                act: SocketEvent.SAVE_DEVICE_DATA,
+                device: Config.stageWidth.toString() + "," + Config.stageHeight.toString()
+            });
+        }
 
         if (event.type == GameEvent.ON_GAME_UPDATE) {
 
@@ -68,4 +79,8 @@ class WaitStep extends AbstractStepView {
         this.totalText.text = "已連線人數：" + GameConfig.totalMembers.toString() + "/4人";
     }
 
+
+    public onTransitionComplete(type:string, stepid:number = -1, pid:number = -1):void {
+        super.onTransitionComplete(type, stepid, pid);
+    }
 }

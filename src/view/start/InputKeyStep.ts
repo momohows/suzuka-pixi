@@ -51,27 +51,12 @@ class InputKeyStep extends AbstractStepView {
         }
 
         GameConfig.channelKey = this.$keyInput.val();
-        App.gameConfig.on(GameEvent.ON_JOIN_CHANNEL, this.onGameConfigStatus.bind(this));
         App.gameConfig.toConnectSocket({
             key: GameConfig.channelKey,
-            act: SocketEvent.JOIN_CHANNEL
+            act: SocketEvent.JOIN_CHANNEL,
+            device: Config.stageWidth.toString() + "," + Config.stageHeight.toString()
         });
-        //window.open(GameConfig.tmpMebmerUrl + GameConfig.channelKey, "_self");
     }
-
-    private onGameConfigStatus(event:any):void {
-
-        if (event.type == GameEvent.ON_JOIN_CHANNEL) {
-            
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.SAVE_DEVICE_DATA,
-                device: "'" + Config.stageWidth.toString() + "," + Config.stageHeight.toString() + "'"
-            });
-        }
-    }
-
 
     private toInitForm():void {
 

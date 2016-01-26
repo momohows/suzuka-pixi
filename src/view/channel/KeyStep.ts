@@ -76,15 +76,6 @@ class KeyStep extends AbstractStepView {
 
         if (event.type == GameEvent.CHANNEL_LOCKED) {
 
-            /* 鎖定Channel完成，廣播所有MEMBER更新Channel */
-            GameConfig.isChannelLocked = true;
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                channelLocked: GameConfig.isChannelLocked,
-                channelMembers: GameConfig.channelMembers
-            });
-
             this.toTransitionOut(1, -1);
         }
     }

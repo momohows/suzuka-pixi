@@ -24,8 +24,21 @@ class MultiGameStep extends AbstractStepView {
 
     public toCreateElements():void {
 
+        this.toCreateRacingStage();
+
         App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
         super.toCreateElements();
+    }
+
+
+    private racingBG:PIXI.Graphics;
+    private racingRange:PIXI.Rectangle;
+    private toCreateRacingStage():void {
+
+        this.racingBG = new PIXI.Graphics();
+        var deviceArr:Array<any> = GameUtil.toGetDeviceData();
+        console.dir(deviceArr);
+
     }
 
     private onGameConfigStatus(event:any) {

@@ -70,61 +70,7 @@ module App {
     }
 
 
-    function toInitConfig():void {
 
-        Config.toInit();
-        window["PixiConfig"] = Config;
-
-        GameConfig.toInit();
-        GameConfig.toSetMemberStatus(0, 1);
-
-        gameConfig = GameConfig.instance();
-        gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
-        gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
-        gameConfig.on(GameEvent.ON_CHANNEL_STATUS, onGameConfigStatus);
-    }
-
-    function onGameConfigStatus(event:any):void {
-
-        if (event.type == GameEvent.ON_SERVER_CONNECTED) {
-
-            if (GameConfig.gameActor == "MEMBER") {
-
-                App.gameConfig.toConnectSocket({
-                    key: GameConfig.channelKey,
-                    act: SocketEvent.JOIN_CHANNEL
-                });
-            }
-        }
-
-
-        if (event.type == GameEvent.ON_SERVER_DISCONNECTED) {
-
-            toCreatePage(0, 0);
-        }
-
-
-        if (event.type == GameEvent.ON_CHANNEL_STATUS) {
-
-
-            if (GameConfig.isWaiting == false) {
-
-                if (GameConfig.gameActor == "LEADER") {
-
-                    /* ChannelView > KeyStep */
-                    toCreatePage(2, 0);
-                }
-
-                if (GameConfig.gameActor == "MEMBER") {
-
-                    /* ChannelView > WaitStep */
-                    toCreatePage(2, 2);
-                }
-                GameConfig.isWaiting = true;
-            }
-        }
-
-    }
 
 
     /**
@@ -244,6 +190,84 @@ module App {
         }
     }
 
+
+
+
+    /**
+     * SiteConfig、GameConfig
+     * */
+    function toInitConfig():void {
+
+        Config.toInit();
+        window["PixiConfig"] = Config;
+
+        GameConfig.toInit();
+        GameConfig.toSetMemberStatus(0, 1);
+
+        gameConfig = GameConfig.instance();
+        gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
+        gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
+        gameConfig.on(GameEvent.ON_JOIN_CHANNEL, onGameConfigStatus);
+        gameConfig.on(GameEvent.ON_CHANNEL_STATUS, onGameConfigStatus);
+    }
+
+    function onGameConfigStatus(event:any):void {
+
+        /* LEADER */
+        if (GameConfig.gameActor == "LEADER") {
+
+            switch (event.type) {
+
+                case GameEvent.ON_SERVER_CONNECTED:
+                    break;
+
+                case GameEvent.ON_SERVER_DISCONNECTED:
+                    toCreatePage(0, 0);
+                    break;
+
+                case GameEvent.ON_JOIN_CHANNEL:
+                    break;
+
+                case GameEvent.ON_CHANNEL_STATUS:
+                    /* ChannelView > KeyStep */
+                    toCreatePage(2, 0);
+                    break;
+            }
+        }
+
+
+        /* MEMBER */
+        if (GameConfig.gameActor == "MEMBER") {
+            switch (event.type) {
+
+                case GameEvent.ON_SERVER_CONNECTED:
+
+                    App.gameConfig.toConnectSocket({
+                        key: GameConfig.channelKey,
+                        act: SocketEvent.JOIN_CHANNEL,
+                        device: Config.stageWidth.toString() + "," + Config.stageHeight.toString()
+                    });
+                    break;
+
+                case GameEvent.ON_SERVER_DISCONNECTED:
+                    toCreatePage(0, 0);
+                    break;
+
+                case GameEvent.ON_JOIN_CHANNEL:
+                    break;
+
+                case GameEvent.ON_CHANNEL_STATUS:
+
+                    if (!GameConfig.isWaiting) {
+                        /* ChannelView > WaitStep */
+                        toCreatePage(2, 2);
+                        GameConfig.isWaiting = true;
+                    }
+                    break;
+            }
+        }
+
+    }
 
 }
 

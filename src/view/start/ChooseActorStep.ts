@@ -5,6 +5,7 @@
 /// <reference path="../../abstract/AbstractStepView.ts"/>
 /// <reference path="../../utils/FrameUtil.ts"/>
 /// <reference path="../../utils/CreateUtil.ts"/>
+/// <reference path="../../utils/GameUtil.ts"/>
 
 class ChooseActorStep extends AbstractStepView {
 
@@ -51,29 +52,16 @@ class ChooseActorStep extends AbstractStepView {
         if (event.type == "mousedown" || event.type == "touchstart") {
 
             GameConfig.gameActor = "LEADER";
-            GameConfig.channelKey = GameConfig.toGetGameKey();
+            GameConfig.channelKey = GameUtil.toCreateGameKey();
 
-            App.gameConfig.on(GameEvent.ON_JOIN_CHANNEL, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
-                act: SocketEvent.JOIN_CHANNEL
+                act: SocketEvent.JOIN_CHANNEL,
+                device: Config.stageWidth.toString() + "," + Config.stageHeight.toString()
             });
         }
     }
 
-    private onGameConfigStatus(event:any):void {
-
-        if (event.type == GameEvent.ON_JOIN_CHANNEL) {
-
-            console.log("GameEvent.ON_JOIN_CHANNEL");
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.SAVE_DEVICE_DATA,
-                device: "'" + Config.stageWidth.toString() + "," + Config.stageHeight.toString() + "'"
-            });
-        }
-    }
 
     private onMemberBtnStatus(event:any):void {
 

@@ -14,9 +14,11 @@ class GameConfig extends PIXI.Container {
     public static isWaiting:boolean;
     public static isChannelLocked:boolean;
 
-    public static tmpMembers:string;
     public static channelMembers:string;
+    public static memberDeviceData:string;
+    public static memberRacingData:string;
     public static memberData:Array<any>;
+    public static memberVars:string;
 
     private static socketConnector:SocketConnector;
 
@@ -35,36 +37,25 @@ class GameConfig extends PIXI.Container {
     }
 
 
-    public static toInit():void {
-
+    public static toReset():void {
         GameConfig.gameId = 0;
         GameConfig.totalMembers = 0;
         GameConfig.gameActor = "";
         GameConfig.channelKey = "";
         GameConfig.isWaiting = false;
         GameConfig.isChannelLocked = false;
-        GameConfig.tmpMembers = '0,0,0,0';
 
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
         GameConfig.channelMembers = '0,0,0,0';
-        GameConfig.memberData = [
-            {
-                device: '0,0',
-                racing: 'x,y,r'
-            },
-            {
-                device: '0,0',
-                racing: 'x,y,r'
-            },
-            {
-                device: '0,0',
-                racing: 'x,y,r'
-            },
-            {
-                device: '0,0',
-                racing: 'x,y,r'
-            }
-        ];
+        GameConfig.memberDeviceData = '50,50|0,0|0,0|0,0';
+        GameConfig.memberRacingData = 'x,y,r|x,y,r|x,y,r|x,y,r';
+        GameConfig.memberVars = "50,50-0,0,0|50,50-0,0,0|50,50-0,0,0|50,50-0,0,0";
+        GameConfig.memberData = [];
+    }
+
+
+    public static toInit():void {
+        GameConfig.toReset();
     }
 
 
@@ -127,10 +118,13 @@ class GameConfig extends PIXI.Container {
                         type: GameEvent.ON_JOIN_CHANNEL
                     });
 
+
+                    /* 正式上線砍掉 */
                     if (GameConfig.gameActor == "LEADER") {
                         console.log(window.location.href + "?key=" + result.key);
                     }
                     this.toKeepConnect();
+                    /* 正式上線砍掉 */
                 }
 
                 /* 加入Channel後可取得Channel資訊 */
@@ -143,17 +137,14 @@ class GameConfig extends PIXI.Container {
                         GameConfig.gameActor = "LEADER";
                     }
 
-                    if (!GameConfig.isChannelLocked) {
-                        GameConfig.toSetMemberStatus(result.memberId - 1, 1);
-                    }
-
                     if (GameConfig.gameActor == "LEADER") {
-                        this.toConnectSocket({
-                            key: GameConfig.channelKey,
-                            act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                            channelLocked: GameConfig.isChannelLocked,
-                            channelMembers: GameConfig.channelMembers
-                        });
+
+                        if (!GameConfig.isChannelLocked) {
+                            GameConfig.toSetMemberStatus(result.memberId - 1, 1);
+                        }
+
+                        GameUtil.toSetDeviceData(result.memberId - 1, result.device);
+                        this.toUpdateChannelStatus();
                     }
 
                     this.emit(GameEvent.ON_CHANNEL_STATUS, {
@@ -165,13 +156,26 @@ class GameConfig extends PIXI.Container {
                 if (action == SocketEvent.UPDATE_CHANNEL_STATUS) {
 
                     GameConfig.channelMembers = result.channelMembers;
+                    GameConfig.memberDeviceData = result.deviceData;
                     GameConfig.isChannelLocked = result.channelLocked;
                     GameConfig.totalMembers = GameConfig.toGetTotalMembers();
-                    console.log("members:" + GameConfig.channelMembers + "/locked:" + GameConfig.isChannelLocked);
+                    //console.clear();
+                    console.log(
+                        "==============================="
+                        + "\n" + "key:" + GameConfig.channelKey
+                        + "\n" + "id:" + GameConfig.gameId
+                        + "\n" + "members:" + GameConfig.channelMembers
+                        + "\n" + "device:" + GameConfig.memberDeviceData
+                        + "\n" + "locked:" + GameConfig.isChannelLocked
+                        + "\n" + "==============================="
+                    );
                 }
 
                 /* 鎖定Channel，阻止玩家加入 */
                 if (action == SocketEvent.LOCK_CHANNEL_SUCCESS) {
+
+                    GameConfig.isChannelLocked = true;
+                    this.toUpdateChannelStatus();
 
                     this.emit(GameEvent.CHANNEL_LOCKED, {
                         type: GameEvent.CHANNEL_LOCKED
@@ -180,7 +184,7 @@ class GameConfig extends PIXI.Container {
 
                 /* MEMBER加入Channel後，傳送Device資訊至LEADER儲存 */
                 if (action == SocketEvent.SAVE_DEVICE_DATA) {
-                    GameConfig.memberData[result.memberId - 1]["device"] = result.device;
+                    GameUtil.toSetDeviceData(result.memberId - 1, result.device);
                 }
 
 
@@ -190,8 +194,7 @@ class GameConfig extends PIXI.Container {
                  **/
                 if (action == SocketEvent.UPDATE_GAME) {
 
-                    /* 如果等於0，表示未加入或者是Lock Channel後才加入 */
-
+                    /* 如果此時等於0，表示未加入或者是Lock Channel後才加入 */
                     if (GameConfig.toGetMemberStatus(GameConfig.gameId - 1) == 0) return;
 
                     var status:string = result.gameStatus;
@@ -222,11 +225,10 @@ class GameConfig extends PIXI.Container {
                             break;
 
                         case "memberAction":
-                            console.log(GameConfig.channelMembers);
+
                             this.emit(GameEvent.ON_GAME_UPDATE, {
                                 type: GameEvent.ON_GAME_UPDATE,
-                                status: "memberAction",
-                                racingData: GameConfig.memberData
+                                status: "memberAction"
                             });
                             break;
 
@@ -262,12 +264,12 @@ class GameConfig extends PIXI.Container {
                                     key: GameConfig.channelKey,
                                     act: SocketEvent.UPDATE_CHANNEL_STATUS,
                                     channelLocked: GameConfig.isChannelLocked,
-                                    channelMembers: GameConfig.channelMembers
+                                    channelMembers: GameConfig.channelMembers,
+                                    deviceData: GameConfig.memberDeviceData
                                 });
                             }
 
                             var allMembersReady:boolean = GameConfig.toCheckMemberReady();
-                            console.log('allMembersReady:' + allMembersReady);
                             if (allMembersReady) {
                                 this.emit(GameEvent.ON_GAME_UPDATE, {
                                     type: GameEvent.ON_GAME_UPDATE,
@@ -277,7 +279,7 @@ class GameConfig extends PIXI.Container {
                             break;
 
                         case "onMemberUpdate":
-                            GameConfig.memberData[result.memberId - 1]["racing"] = result.racing;
+
                             this.toConnectSocket({
                                 key: GameConfig.channelKey,
                                 act: SocketEvent.UPDATE_GAME,
@@ -302,7 +304,8 @@ class GameConfig extends PIXI.Container {
                         key: GameConfig.channelKey,
                         act: SocketEvent.UPDATE_CHANNEL_STATUS,
                         channelLocked: GameConfig.isChannelLocked,
-                        channelMembers: GameConfig.channelMembers
+                        channelMembers: GameConfig.channelMembers,
+                        deviceData: GameConfig.memberDeviceData
                     });
                 }
 
@@ -343,11 +346,15 @@ class GameConfig extends PIXI.Container {
     }
 
 
-    public static toGetGameKey():string {
-        var key:string =
-            ((((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1))
-            + ((((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1));
-        return key;
+    private toUpdateChannelStatus():void {
+
+        this.toConnectSocket({
+            key: GameConfig.channelKey,
+            act: SocketEvent.UPDATE_CHANNEL_STATUS,
+            channelLocked: GameConfig.isChannelLocked,
+            channelMembers: GameConfig.channelMembers,
+            deviceData: GameConfig.memberDeviceData
+        });
     }
 
     public static toSetMemberStatus(id:number, status:number):void {
