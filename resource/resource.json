@@ -1,0 +1,58 @@
+{
+  "groups": [
+    {
+      "name": "preload_assets",
+      "resources": [
+        {
+          "name": "bunny",
+          "url": "resource/assets/bunny.png"
+        }
+      ]
+    },
+    {
+      "name": "home_assets",
+      "resources": [
+        {
+          "name": "home_bg",
+          "url": "resource/assets/home/home_bg.jpg"
+        }
+      ]
+    },
+    {
+      "name": "start_assets",
+      "resources": [
+        {
+          "name": "start_bg",
+          "url": "resource/assets/start/start_bg.jpg"
+        }
+      ]
+    },
+    {
+      "name": "channel_assets",
+      "resources": [
+        {
+          "name": "channel_bg",
+          "url": "resource/assets/channel/channel_bg.jpg"
+        }
+      ]
+    },
+    {
+      "name": "play_assets",
+      "resources": [
+        {
+          "name": "play_bg",
+          "url": "resource/assets/play/play_bg.jpg"
+        }
+      ]
+    },
+    {
+      "name": "result_assets",
+      "resources": [
+        {
+          "name": "result_bg",
+          "url": "resource/assets/result/result_bg.jpg"
+        }
+      ]
+    }
+  ]
+}

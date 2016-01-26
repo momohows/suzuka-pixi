@@ -1,0 +1,59 @@
+
+body, html {
+    width: 100%;
+    height: 100%;
+}
+
+.playerCon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#navCon {
+
+    position: fixed;
+    width: 100%;
+    height: 50px;
+    background-color: black;
+    top: 0px;
+    color: white;
+    line-height: 48px;
+    text-align: center;
+}
+
+#footerCon {
+
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    background-color: black;
+    bottom: 0px;
+    color: white;
+
+    line-height: 48px;
+    text-align: center;
+}
+
+form {
+    visibility: hidden;
+    opacity: 0;
+}
+
+input[name="keyInput"] {
+
+    position: absolute;
+    width: 150px;
+    height: 30px;
+    padding: 2px 5px;
+    left: 50%;
+    margin-left: -75px;
+    top:50%;
+    margin-top: -15px;
+
+    background: none;
+    border: 1px #ffffff solid;
+    font-size: 20px;
+    text-align: center;
+    color: #FFFFFF;
+}
