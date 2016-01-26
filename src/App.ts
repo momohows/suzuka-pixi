@@ -106,11 +106,6 @@ module App {
 
         if (event.type == GameEvent.ON_CHANNEL_STATUS) {
 
-            if (GameConfig.toGetMemberStatus(GameConfig.gameId) == 0) {
-
-                alert("Channel已開始，無法加入");
-                toCreatePage(0, 0);
-            }
 
             if (GameConfig.isWaiting == false) {
 
