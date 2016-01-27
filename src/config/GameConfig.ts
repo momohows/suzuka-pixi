@@ -20,7 +20,7 @@ class GameConfig extends PIXI.Container {
     public static memberData:Array<any>;
     public static memberVars:string;
 
-    private static socketConnector:SocketConnector;
+    private socketConnector:SocketConnector;
 
     constructor() {
         super();
@@ -62,22 +62,22 @@ class GameConfig extends PIXI.Container {
 
     public toInitSocket():void {
 
-        if (!GameConfig.socketConnector) {
+        if (!this.socketConnector) {
 
             App.loadingUI.toTransitionIn();
-            GameConfig.socketConnector = SocketConnector.instance();
-            GameConfig.socketConnector.toInit();
+            this.socketConnector = SocketConnector.instance();
+            this.socketConnector.toInit();
         }
 
-        GameConfig.socketConnector.on(SocketEvent.ON_CONNECT_SUCCESS, this.onSocketStatus.bind(this));
-        GameConfig.socketConnector.on(SocketEvent.ON_MESSAGE, this.onSocketStatus.bind(this));
-        GameConfig.socketConnector.on(SocketEvent.ON_CLOSE, this.onSocketStatus.bind(this));
-        GameConfig.socketConnector.on(SocketEvent.ON_CONNECT_ERROR, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_CONNECT_SUCCESS, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_MESSAGE, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_CLOSE, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_CONNECT_ERROR, this.onSocketStatus.bind(this));
     }
 
 
     public toConnectSocket(msg:Object) {
-        GameConfig.socketConnector.toSendMessage(msg);
+        this.socketConnector.toSendMessage(msg);
     }
 
 
@@ -312,7 +312,7 @@ class GameConfig extends PIXI.Container {
                     });
                 }
 
-                GameConfig.socketConnector = null;
+                this.socketConnector = null;
                 this.emit(GameEvent.ON_SERVER_DISCONNECTED, {
                     type: GameEvent.ON_SERVER_DISCONNECTED
                 });
@@ -327,7 +327,7 @@ class GameConfig extends PIXI.Container {
          **/
             case SocketEvent.ON_CONNECT_ERROR:
 
-                GameConfig.socketConnector = null;
+                this.socketConnector = null;
                 this.emit(GameEvent.ON_SERVER_DISCONNECTED, {
                     type: GameEvent.ON_SERVER_DISCONNECTED
                 });

@@ -261,18 +261,18 @@ var GameConfig = (function (_super) {
         this.toReset();
     };
     GameConfig.prototype.toInitSocket = function () {
-        if (!GameConfig.socketConnector) {
+        if (!this.socketConnector) {
             App.loadingUI.toTransitionIn();
-            GameConfig.socketConnector = SocketConnector.instance();
-            GameConfig.socketConnector.toInit();
+            this.socketConnector = SocketConnector.instance();
+            this.socketConnector.toInit();
         }
-        GameConfig.socketConnector.on(SocketEvent.ON_CONNECT_SUCCESS, this.onSocketStatus.bind(this));
-        GameConfig.socketConnector.on(SocketEvent.ON_MESSAGE, this.onSocketStatus.bind(this));
-        GameConfig.socketConnector.on(SocketEvent.ON_CLOSE, this.onSocketStatus.bind(this));
-        GameConfig.socketConnector.on(SocketEvent.ON_CONNECT_ERROR, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_CONNECT_SUCCESS, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_MESSAGE, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_CLOSE, this.onSocketStatus.bind(this));
+        this.socketConnector.on(SocketEvent.ON_CONNECT_ERROR, this.onSocketStatus.bind(this));
     };
     GameConfig.prototype.toConnectSocket = function (msg) {
-        GameConfig.socketConnector.toSendMessage(msg);
+        this.socketConnector.toSendMessage(msg);
     };
     GameConfig.prototype.onSocketStatus = function (event) {
         App.loadingUI.toTransitionOut();
@@ -449,7 +449,7 @@ var GameConfig = (function (_super) {
                         deviceData: GameConfig.memberDeviceData
                     });
                 }
-                GameConfig.socketConnector = null;
+                this.socketConnector = null;
                 this.emit(GameEvent.ON_SERVER_DISCONNECTED, {
                     type: GameEvent.ON_SERVER_DISCONNECTED
                 });
@@ -459,7 +459,7 @@ var GameConfig = (function (_super) {
              *  Websocket連接錯誤時發生
              **/
             case SocketEvent.ON_CONNECT_ERROR:
-                GameConfig.socketConnector = null;
+                this.socketConnector = null;
                 this.emit(GameEvent.ON_SERVER_DISCONNECTED, {
                     type: GameEvent.ON_SERVER_DISCONNECTED
                 });
@@ -2131,7 +2131,6 @@ var App;
     function toInitConfig() {
         Config.toInit();
         window["PixiConfig"] = Config;
-        //GameUtil.toSetMemberStatus(0, 1);
         App.gameConfig = GameConfig.instance();
         App.gameConfig.toInit();
         App.gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);

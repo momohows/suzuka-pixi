@@ -201,7 +201,7 @@ module App {
 
         Config.toInit();
         window["PixiConfig"] = Config;
-        
+
         gameConfig = GameConfig.instance();
         gameConfig.toInit();
         gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
