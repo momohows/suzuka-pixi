@@ -13,4 +13,9 @@ module GameEvent {
     export const ON_SERVER_CONNECTED:string = "onServerConnected";
     export const ON_SERVER_DISCONNECTED:string = "onServerDisconnected";
     export const CHANNEL_LOCKED:string = "channelLocked";
+
+
+
+    /* Game */
+    export const ON_COUNTDOWN:string = "onCountDown";
 }

@@ -5,7 +5,53 @@
 
 module GameUtil {
 
+    /* COUNTDOWN */
+    export class CountDown extends PIXI.Container {
 
+        private ticker:any;
+        private repeat:number;
+        private count:number;
+
+        constructor(repeat:number = 1) {
+            super();
+            this.repeat = repeat;
+            this.toCreateElement(repeat);
+        }
+
+        private toCreateElement(repeat:number):void {
+
+            this.count = 0;
+            this.ticker = setInterval(()=> {
+                if (this.count <= this.repeat) {
+
+                    this.emit(GameEvent.ON_COUNTDOWN, {
+                        count: this.count + 1,
+                        type: GameEvent.ON_COUNTDOWN
+                    });
+
+                    this.count++;
+
+                } else {
+                    this.toStop();
+                }
+
+            }, 1000)
+        }
+
+        private toReset():void {
+            this.toStop();
+            this.toCreateElement(this.repeat);
+        }
+
+        private toStop():void {
+            window.clearInterval(this.ticker);
+            this.ticker = null;
+        }
+    }
+    /* COUNTDOWN End */
+
+
+    /* TOOLS */
     export function toCreateGameKey():string {
 
         var key:string =
@@ -13,7 +59,6 @@ module GameUtil {
             + ((((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1));
         return key;
     }
-
 
     export function toSwapStrToNumberArr(str:string):Array<number> {
 
@@ -23,7 +68,6 @@ module GameUtil {
         });
         return tmpArr;
     }
-
 
     export function toSetDeviceData(id:number, data:string):void {
 
@@ -45,7 +89,6 @@ module GameUtil {
         });
         return deviceData;
     }
-
 
     export function toSetMemberStatus(id:number, status:number):void {
 
@@ -89,5 +132,37 @@ module GameUtil {
         });
 
         return total == GameConfig.totalMembers ? true : false;
+    }
+
+    export function toGetDeviceStartX(id:number):number {
+
+        var targetX:number = 0;
+        for (var i:number = 0; i < id - 1; i++) {
+            targetX = targetX + GameUtil.toGetDeviceData()[i][0];
+        }
+        return targetX;
+    }
+
+    export function toGetAllDeviceMinHeight():number {
+
+        var heightArr:Array<number> = [];
+        GameUtil.toGetDeviceData().forEach(item=> {
+            if (item[1] > 0) {
+                heightArr.push(item[1]);
+            }
+        });
+
+        var minH:number = Math.min.apply(null, heightArr);
+        return minH;
+    }
+
+    export function toGetAllDeviceMaxWidth():number {
+
+        var w:number = 0;
+        GameUtil.toGetDeviceData().forEach(item=> {
+            if (item[0] > 0) w += item[0];
+        });
+
+        return w;
     }
 }

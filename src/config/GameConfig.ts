@@ -38,6 +38,7 @@ class GameConfig extends PIXI.Container {
 
 
     public toReset():void {
+
         GameConfig.gameId = 0;
         GameConfig.totalMembers = 0;
         GameConfig.gameActor = "";
@@ -55,7 +56,6 @@ class GameConfig extends PIXI.Container {
 
     public toInit():void {
 
-        console.log("XXXX");
         this.toReset();
     }
 
