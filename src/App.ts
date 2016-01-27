@@ -33,7 +33,6 @@ module App {
         if (GameConfig.channelKey == "" || /[A-Za-z0-9]{8}/.test(GameConfig.channelKey) == false) {
 
             toCreatePage(0, 0);
-            //toCreatePage(3, 1);
 
         } else {
 
@@ -41,6 +40,8 @@ module App {
             gameConfig.toInitSocket();
         }
     }
+
+    /* ============================================= */
 
 
     /**
@@ -70,8 +71,7 @@ module App {
         gameScene.addChild(loadingUI);
     }
 
-
-
+    /* ============================================= */
 
 
     /**
@@ -137,6 +137,8 @@ module App {
         }
     }
 
+    /* ============================================= */
+
 
     /**
      * CreatePage
@@ -168,7 +170,7 @@ module App {
 
         var viewClass:any = viewData[id]["className"];
         var viewResources:any = RES.toGetRes(viewData[id]["assetsName"] + "_assets");
-        currentPage = new viewClass(viewData[id]["assetsName"], viewResources, stepid);
+        currentPage = new viewClass(viewData[id]["assetsName"], viewResources, id, stepid);
         currentPage.once(ViewEvent.TRANSITION_IN_COMPLETE, onViewStatus);
         currentPage.once(ViewEvent.TRANSITION_OUT_COMPLETE, onViewStatus);
 
@@ -191,11 +193,11 @@ module App {
         }
     }
 
-
+    /* ============================================= */
 
 
     /**
-     * SiteConfig、GameConfig
+     * GameConfig
      * */
     function toInitConfig():void {
 
@@ -206,8 +208,9 @@ module App {
         gameConfig.toInit();
         gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
         gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
-        gameConfig.on(GameEvent.ON_JOIN_CHANNEL, onGameConfigStatus);
         gameConfig.on(GameEvent.ON_CHANNEL_STATUS, onGameConfigStatus);
+        gameConfig.on(GameEvent.CHANNEL_LOCKED, onGameConfigStatus);
+        gameConfig.on(GameEvent.ON_GAME_UPDATE, onGameConfigStatus);
     }
 
     function onGameConfigStatus(event:any):void {
@@ -218,20 +221,37 @@ module App {
             switch (event.type) {
 
                 case GameEvent.ON_SERVER_CONNECTED:
+
+                    /* StartView > ChooseActorStep */
+                    toCreatePage(1, 1);
                     break;
 
                 case GameEvent.ON_SERVER_DISCONNECTED:
+
+                    /* HomeView > CatchStep */
                     toCreatePage(0, 0);
                     break;
 
-                case GameEvent.ON_JOIN_CHANNEL:
-                    break;
-
                 case GameEvent.ON_CHANNEL_STATUS:
+
                     if (!GameConfig.isWaiting) {
+
                         /* ChannelView > KeyStep */
                         toCreatePage(2, 0);
                         GameConfig.isWaiting = true;
+                    }
+                    break;
+
+                case GameEvent.CHANNEL_LOCKED:
+                    /* ChannelView > GuideStep */
+                    toCreatePage(2, 1);
+                    break;
+
+                case GameEvent.ON_GAME_UPDATE:
+                    if (event.status == "toStandBy") {
+
+                        /* GameView > MultiGameStep */
+                        toCreatePage(3, 1);
                     }
                     break;
             }
@@ -252,10 +272,9 @@ module App {
                     break;
 
                 case GameEvent.ON_SERVER_DISCONNECTED:
-                    toCreatePage(0, 0);
-                    break;
 
-                case GameEvent.ON_JOIN_CHANNEL:
+                    /* HomeView > CatchStep */
+                    toCreatePage(0, 0);
                     break;
 
                 case GameEvent.ON_CHANNEL_STATUS:
@@ -266,10 +285,19 @@ module App {
                         GameConfig.isWaiting = true;
                     }
                     break;
+
+                case GameEvent.ON_GAME_UPDATE:
+
+                    if (event.status == "toStandBy") {
+                        /* GameView > MultiGameStep */
+                        toCreatePage(3, 1);
+                    }
+                    break;
             }
         }
-
     }
+
+    /* ============================================= */
 
 }
 

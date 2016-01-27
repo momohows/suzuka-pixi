@@ -37,7 +37,6 @@ class GuideStep extends AbstractStepView {
     private onPlayBtnStatus(event:any):void {
 
         if (GameConfig.totalMembers > 1) {
-            App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 memberId: GameConfig.gameId,
@@ -53,15 +52,6 @@ class GuideStep extends AbstractStepView {
 
     }
 
-    private onGameConfigStatus(event:any):void {
-
-        if (event.type == GameEvent.ON_GAME_UPDATE) {
-
-            if (event.status == "toStandBy") {
-                this.toTransitionOut(1, 3);
-            }
-        }
-    }
 
 
     public toUpdate():void {

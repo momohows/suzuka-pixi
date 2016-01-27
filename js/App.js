@@ -248,7 +248,7 @@ var GameConfig = (function (_super) {
     GameConfig.prototype.toReset = function () {
         GameConfig.gameId = 0;
         GameConfig.totalMembers = 0;
-        GameConfig.gameActor = "";
+        GameConfig.gameActor = "LEADER";
         GameConfig.channelKey = "";
         GameConfig.isWaiting = false;
         GameConfig.isChannelLocked = false;
@@ -669,12 +669,14 @@ var AbstractStepView = (function (_super) {
 /// <reference path="../abstract/AbstractStepView.ts"/>
 var AbstractView = (function (_super) {
     __extends(AbstractView, _super);
-    function AbstractView(name, resourses, stepid) {
+    function AbstractView(name, resourses, id, stepid) {
+        if (id === void 0) { id = 0; }
         if (stepid === void 0) { stepid = 0; }
         _super.call(this);
         this.name = name;
         this.resources = resourses;
         this.alpha = 0;
+        this.id = id;
         this.stepId = stepid;
         $(window).resize(this.onResize.bind(this));
         this.toInit();
@@ -730,7 +732,13 @@ var AbstractView = (function (_super) {
         if (pid === void 0) { pid = -1; }
         if (stepid === void 0) { stepid = -1; }
         if (this.stepView) {
-            this.stepView.toTransitionOut(stepid, pid);
+            console.log("pid:" + pid + "/id:" + this.id);
+            if (pid == this.id) {
+                this.stepView.toTransitionOut(stepid, -1);
+            }
+            else {
+                this.stepView.toTransitionOut(stepid, pid);
+            }
             return;
         }
         TweenMax.to(this, 0.5, {
@@ -979,8 +987,8 @@ var SocketConnector = (function (_super) {
 /// <reference path="../service/SocketConnector.ts"/>
 var HomeView = (function (_super) {
     __extends(HomeView, _super);
-    function HomeView(name, resources, stepid) {
-        _super.call(this, name, resources, stepid);
+    function HomeView(name, resources, id, stepid) {
+        _super.call(this, name, resources, id, stepid);
         /**
          * Step
          * */
@@ -1072,12 +1080,7 @@ var NumberOfStep = (function (_super) {
             GameConfig.gameType = "MultiGame";
             /* 初始化Websocket */
             App.gameConfig.toInitSocket();
-            App.gameConfig.on(GameEvent.ON_SERVER_CONNECTED, this.onGameConfigStatus.bind(this));
         }
-    };
-    NumberOfStep.prototype.onGameConfigStatus = function (event) {
-        /* StartView > ChooseActorStep */
-        this.toTransitionOut(1, -1);
     };
     NumberOfStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
@@ -1364,8 +1367,8 @@ var InputKeyStep = (function (_super) {
 /// <reference path="../service/SocketConnector.ts"/>
 var StartView = (function (_super) {
     __extends(StartView, _super);
-    function StartView(name, resources, stepid) {
-        _super.call(this, name, resources, stepid);
+    function StartView(name, resources, id, stepid) {
+        _super.call(this, name, resources, id, stepid);
         /**
          * Step
          * */
@@ -1461,16 +1464,10 @@ var KeyStep = (function (_super) {
     KeyStep.prototype.onLockBtnStatus = function (event) {
         if (event.type == "mousedown" || event.type == "touchstart") {
             /* 在LEADER按下連線完成後，鎖定Channel人數，不讓人加入 */
-            App.gameConfig.on(GameEvent.CHANNEL_LOCKED, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 act: SocketEvent.LOCK_CHANNEL
             });
-        }
-    };
-    KeyStep.prototype.onGameConfigStatus = function (event) {
-        if (event.type == GameEvent.CHANNEL_LOCKED) {
-            this.toTransitionOut(1, -1);
         }
     };
     KeyStep.prototype.toUpdate = function () {
@@ -1506,7 +1503,6 @@ var GuideStep = (function (_super) {
     };
     GuideStep.prototype.onPlayBtnStatus = function (event) {
         if (GameConfig.totalMembers > 1) {
-            App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 memberId: GameConfig.gameId,
@@ -1517,13 +1513,6 @@ var GuideStep = (function (_super) {
         else {
             GameConfig.gameType = "SingleGame";
             this.toTransitionOut(0, 3);
-        }
-    };
-    GuideStep.prototype.onGameConfigStatus = function (event) {
-        if (event.type == GameEvent.ON_GAME_UPDATE) {
-            if (event.status == "toStandBy") {
-                this.toTransitionOut(1, 3);
-            }
         }
     };
     GuideStep.prototype.toUpdate = function () {
@@ -1610,8 +1599,8 @@ var WaitStep = (function (_super) {
 /// <reference path="../service/SocketConnector.ts"/>
 var ChannelView = (function (_super) {
     __extends(ChannelView, _super);
-    function ChannelView(name, resources, stepid) {
-        _super.call(this, name, resources, stepid);
+    function ChannelView(name, resources, id, stepid) {
+        _super.call(this, name, resources, id, stepid);
         /**
          * Step
          * */
@@ -1707,6 +1696,7 @@ var MultiGameStep = (function (_super) {
         _super.prototype.onResize.call(this, event);
     };
     MultiGameStep.prototype.toCreateElements = function () {
+        this.action = false;
         this.toCreateGame();
         _super.prototype.toCreateElements.call(this);
     };
@@ -1720,16 +1710,7 @@ var MultiGameStep = (function (_super) {
             console.log("countDown:" + event.countDown);
         }
         if (event.status == "startGame") {
-            console.log("startGame");
-            setInterval(function () {
-                App.gameConfig.toConnectSocket({
-                    key: GameConfig.channelKey,
-                    memberId: GameConfig.gameId,
-                    act: SocketEvent.MEMBER_TO_LEADER,
-                    gameStatus: "onMemberUpdate",
-                    racing: '0,0,0'
-                });
-            }, 300);
+            this.action = true;
         }
         if (event.status == "memberAction") {
         }
@@ -1756,9 +1737,20 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateGame = function () {
+        this.gameCon = new PIXI.Container();
+        this.addChild(this.gameCon);
     };
     MultiGameStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
+        if (this.action) {
+            App.gameConfig.toConnectSocket({
+                key: GameConfig.channelKey,
+                memberId: GameConfig.gameId,
+                act: SocketEvent.MEMBER_TO_LEADER,
+                gameStatus: "onMemberUpdate",
+                racing: '0,0,0'
+            });
+        }
     };
     MultiGameStep.prototype.onTransitionComplete = function (type, stepid, pid) {
         if (stepid === void 0) { stepid = -1; }
@@ -1787,8 +1779,8 @@ var MultiGameStep = (function (_super) {
 /// <reference path="../service/SocketConnector.ts"/>
 var GameView = (function (_super) {
     __extends(GameView, _super);
-    function GameView(name, resources, stepid) {
-        _super.call(this, name, resources, stepid);
+    function GameView(name, resources, id, stepid) {
+        _super.call(this, name, resources, id, stepid);
         /**
          * Step
          * */
@@ -1874,8 +1866,8 @@ var AwardStep = (function (_super) {
 /// <reference path="../service/SocketConnector.ts"/>
 var ResultView = (function (_super) {
     __extends(ResultView, _super);
-    function ResultView(name, resources, stepid) {
-        _super.call(this, name, resources, stepid);
+    function ResultView(name, resources, id, stepid) {
+        _super.call(this, name, resources, id, stepid);
         /**
          * Step
          * */
@@ -2097,7 +2089,7 @@ var App;
         }
         var viewClass = viewData[id]["className"];
         var viewResources = RES.toGetRes(viewData[id]["assetsName"] + "_assets");
-        currentPage = new viewClass(viewData[id]["assetsName"], viewResources, stepid);
+        currentPage = new viewClass(viewData[id]["assetsName"], viewResources, id, stepid);
         currentPage.once(ViewEvent.TRANSITION_IN_COMPLETE, onViewStatus);
         currentPage.once(ViewEvent.TRANSITION_OUT_COMPLETE, onViewStatus);
         gameScene.addChildAt(currentPage, 0);
@@ -2113,7 +2105,7 @@ var App;
         }
     }
     /**
-     * SiteConfig、GameConfig
+     * GameConfig
      * */
     function toInitConfig() {
         Config.toInit();
@@ -2122,25 +2114,37 @@ var App;
         App.gameConfig.toInit();
         App.gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
         App.gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
-        App.gameConfig.on(GameEvent.ON_JOIN_CHANNEL, onGameConfigStatus);
         App.gameConfig.on(GameEvent.ON_CHANNEL_STATUS, onGameConfigStatus);
+        App.gameConfig.on(GameEvent.CHANNEL_LOCKED, onGameConfigStatus);
+        App.gameConfig.on(GameEvent.ON_GAME_UPDATE, onGameConfigStatus);
     }
     function onGameConfigStatus(event) {
         /* LEADER */
         if (GameConfig.gameActor == "LEADER") {
             switch (event.type) {
                 case GameEvent.ON_SERVER_CONNECTED:
+                    /* StartView > ChooseActorStep */
+                    toCreatePage(1, 1);
                     break;
                 case GameEvent.ON_SERVER_DISCONNECTED:
+                    /* HomeView > CatchStep */
                     toCreatePage(0, 0);
-                    break;
-                case GameEvent.ON_JOIN_CHANNEL:
                     break;
                 case GameEvent.ON_CHANNEL_STATUS:
                     if (!GameConfig.isWaiting) {
                         /* ChannelView > KeyStep */
                         toCreatePage(2, 0);
                         GameConfig.isWaiting = true;
+                    }
+                    break;
+                case GameEvent.CHANNEL_LOCKED:
+                    /* ChannelView > GuideStep */
+                    toCreatePage(2, 1);
+                    break;
+                case GameEvent.ON_GAME_UPDATE:
+                    if (event.status == "toStandBy") {
+                        /* GameView > MultiGameStep */
+                        toCreatePage(3, 1);
                     }
                     break;
             }
@@ -2156,15 +2160,20 @@ var App;
                     });
                     break;
                 case GameEvent.ON_SERVER_DISCONNECTED:
+                    /* HomeView > CatchStep */
                     toCreatePage(0, 0);
-                    break;
-                case GameEvent.ON_JOIN_CHANNEL:
                     break;
                 case GameEvent.ON_CHANNEL_STATUS:
                     if (!GameConfig.isWaiting) {
                         /* ChannelView > WaitStep */
                         toCreatePage(2, 2);
                         GameConfig.isWaiting = true;
+                    }
+                    break;
+                case GameEvent.ON_GAME_UPDATE:
+                    if (event.status == "toStandBy") {
+                        /* GameView > MultiGameStep */
+                        toCreatePage(3, 1);
                     }
                     break;
             }

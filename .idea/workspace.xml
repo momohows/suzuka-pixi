@@ -2,11 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6df34be4-2e50-4d99-972b-772c5f1f5947" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/abstract/AbstractView.ts" afterPath="$PROJECT_DIR$/src/abstract/AbstractView.ts" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/App.js" afterPath="$PROJECT_DIR$/js/App.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/App.ts" afterPath="$PROJECT_DIR$/src/App.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/ChannelView.ts" afterPath="$PROJECT_DIR$/src/view/ChannelView.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/start/ChooseActorStep.ts" afterPath="$PROJECT_DIR$/src/view/start/ChooseActorStep.ts" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/config/GameConfig.ts" afterPath="$PROJECT_DIR$/src/config/GameConfig.ts" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/events/GameEvent.ts" afterPath="$PROJECT_DIR$/src/events/GameEvent.ts" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/GameUtil.ts" afterPath="$PROJECT_DIR$/src/utils/GameUtil.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/GameView.ts" afterPath="$PROJECT_DIR$/src/view/GameView.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/channel/GuideStep.ts" afterPath="$PROJECT_DIR$/src/view/channel/GuideStep.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/HomeView.ts" afterPath="$PROJECT_DIR$/src/view/HomeView.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/channel/KeyStep.ts" afterPath="$PROJECT_DIR$/src/view/channel/KeyStep.ts" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/game/MultiGameStep.ts" afterPath="$PROJECT_DIR$/src/view/game/MultiGameStep.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/start/NumberOfStep.ts" afterPath="$PROJECT_DIR$/src/view/start/NumberOfStep.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/ResultView.ts" afterPath="$PROJECT_DIR$/src/view/ResultView.ts" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/StartView.ts" afterPath="$PROJECT_DIR$/src/view/StartView.ts" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="suzuka-pixi.iws" />
@@ -27,7 +36,7 @@
     <favorites_list name="suzuka-pixi" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.43481687">
+    <splitter split-orientation="horizontal" split-proportion="0.5104491">
       <split-first>
         <leaf>
           <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
@@ -40,21 +49,51 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="App.ts" pinned="false" current-in-tab="false">
+          <file leaf-file-name="App.ts" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/App.ts">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="42.666668">
-                  <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+                <state vertical-scroll-proportion="7.6584845">
+                  <caret line="299" column="55" selection-start-line="299" selection-start-column="55" selection-end-line="299" selection-end-column="55" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="MultiGameStep.ts" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/view/game/MultiGameStep.ts">
+          <file leaf-file-name="NumberOfStep.ts" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/view/start/NumberOfStep.ts">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.35965848">
-                  <caret line="95" column="36" selection-start-line="95" selection-start-column="36" selection-end-line="95" selection-end-column="36" />
+                <state vertical-scroll-proportion="-10.703704">
+                  <caret line="52" column="47" selection-start-line="52" selection-start-column="47" selection-end-line="52" selection-end-column="47" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ChooseActorStep.ts" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/view/start/ChooseActorStep.ts">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="-8.0">
+                  <caret line="9" column="21" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="21" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="KeyStep.ts" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/view/channel/KeyStep.ts">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="-22.25926">
+                  <caret line="73" column="0" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="GuideStep.ts" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/view/channel/GuideStep.ts">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="-21.37037">
+                  <caret line="53" column="0" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -64,11 +103,11 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="GameConfig.ts" pinned="false" current-in-tab="false">
+          <file leaf-file-name="GameConfig.ts" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/config/GameConfig.ts">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="-20.444445">
-                  <caret line="43" column="34" selection-start-line="43" selection-start-column="34" selection-end-line="43" selection-end-column="34" />
+                <state vertical-scroll-proportion="0.5891142">
+                  <caret line="43" column="38" selection-start-line="43" selection-start-column="38" selection-end-line="43" selection-end-column="38" />
                   <folding />
                 </state>
               </provider>
@@ -84,10 +123,10 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="GameEvent.ts" pinned="false" current-in-tab="true">
+          <file leaf-file-name="GameEvent.ts" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/events/GameEvent.ts">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.43543223">
+                <state vertical-scroll-proportion="-15.111111">
                   <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
                   <folding />
                 </state>
@@ -112,14 +151,22 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/view/channel/WaitStep.ts" />
-        <option value="$PROJECT_DIR$/src/view/start/ChooseActorStep.ts" />
         <option value="$PROJECT_DIR$/src/view/start/InputKeyStep.ts" />
-        <option value="$PROJECT_DIR$/src/view/channel/KeyStep.ts" />
-        <option value="$PROJECT_DIR$/src/config/GameConfig.ts" />
         <option value="$PROJECT_DIR$/src/events/GameEvent.ts" />
-        <option value="$PROJECT_DIR$/src/App.ts" />
         <option value="$PROJECT_DIR$/src/utils/GameUtil.ts" />
         <option value="$PROJECT_DIR$/src/view/game/MultiGameStep.ts" />
+        <option value="$PROJECT_DIR$/src/view/ResultView.ts" />
+        <option value="$PROJECT_DIR$/src/view/StartView.ts" />
+        <option value="$PROJECT_DIR$/src/view/HomeView.ts" />
+        <option value="$PROJECT_DIR$/src/view/GameView.ts" />
+        <option value="$PROJECT_DIR$/src/view/ChannelView.ts" />
+        <option value="$PROJECT_DIR$/src/abstract/AbstractView.ts" />
+        <option value="$PROJECT_DIR$/src/config/GameConfig.ts" />
+        <option value="$PROJECT_DIR$/src/view/start/NumberOfStep.ts" />
+        <option value="$PROJECT_DIR$/src/view/start/ChooseActorStep.ts" />
+        <option value="$PROJECT_DIR$/src/view/channel/KeyStep.ts" />
+        <option value="$PROJECT_DIR$/src/view/channel/GuideStep.ts" />
+        <option value="$PROJECT_DIR$/src/App.ts" />
       </list>
     </option>
   </component>
@@ -259,6 +306,32 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="start" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="suzuka-pixi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="suzuka-pixi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="suzuka-pixi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="view" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="home" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -656,34 +729,10 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/abstract/AbstractView.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/view/channel/WaitStep.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.25799572">
           <caret line="63" column="90" selection-start-line="63" selection-start-column="16" selection-end-line="63" selection-end-column="90" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/view/channel/KeyStep.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8772679">
-          <caret line="56" column="24" selection-start-line="56" selection-start-column="24" selection-end-line="56" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
           <folding />
         </state>
       </provider>
@@ -704,26 +753,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/view/start/ChooseActorStep.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.153682">
-          <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/view/start/InputKeyStep.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.47705442">
           <caret line="59" column="0" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/view/start/NumberOfStep.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.51654214">
-          <caret line="67" column="5" selection-start-line="67" selection-start-column="5" selection-end-line="67" selection-end-column="5" />
           <folding />
         </state>
       </provider>
@@ -736,22 +769,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/config/GameConfig.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-20.444445">
-          <caret line="43" column="34" selection-start-line="43" selection-start-column="34" selection-end-line="43" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/App.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="42.666668">
-          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/utils/GameUtil.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-20.444445">
@@ -760,18 +777,122 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/game/MultiGameStep.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5133405">
+          <caret line="117" column="54" selection-start-line="117" selection-start-column="54" selection-end-line="117" selection-end-column="54" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/ResultView.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.444445">
+          <caret line="14" column="43" selection-start-line="12" selection-start-column="4" selection-end-line="14" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/HomeView.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.444445">
+          <caret line="14" column="43" selection-start-line="14" selection-start-column="43" selection-end-line="14" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/GameView.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-13.333333">
+          <caret line="15" column="43" selection-start-line="15" selection-start-column="43" selection-end-line="15" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/ChannelView.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="30.185184">
+          <caret line="19" column="25" selection-start-line="19" selection-start-column="25" selection-end-line="19" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/StartView.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.40981856">
+          <caret line="16" column="43" selection-start-line="16" selection-start-column="43" selection-end-line="16" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/abstract/AbstractView.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5635005">
+          <caret line="22" column="21" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/events/GameEvent.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.43543223">
+        <state vertical-scroll-proportion="-15.111111">
           <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/view/game/MultiGameStep.ts">
+    <entry file="file://$PROJECT_DIR$/src/config/GameConfig.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.35965848">
-          <caret line="95" column="36" selection-start-line="95" selection-start-column="36" selection-end-line="95" selection-end-column="36" />
+        <state vertical-scroll-proportion="0.5891142">
+          <caret line="43" column="38" selection-start-line="43" selection-start-column="38" selection-end-line="43" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/start/NumberOfStep.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-10.703704">
+          <caret line="52" column="47" selection-start-line="52" selection-start-column="47" selection-end-line="52" selection-end-column="47" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/channel/KeyStep.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-22.25926">
+          <caret line="73" column="0" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/channel/GuideStep.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-21.37037">
+          <caret line="53" column="0" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/start/ChooseActorStep.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-8.0">
+          <caret line="9" column="21" selection-start-line="9" selection-start-column="6" selection-end-line="9" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/App.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="7.6584845">
+          <caret line="299" column="55" selection-start-line="299" selection-start-column="55" selection-end-line="299" selection-end-column="55" />
           <folding />
         </state>
       </provider>

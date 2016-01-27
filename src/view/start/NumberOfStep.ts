@@ -59,18 +59,11 @@ class NumberOfStep extends AbstractStepView {
     private onMultiBtnStatus(event:any):void {
 
         if (event.type == "mousedown" || event.type == "touchstart") {
-            GameConfig.gameType = "MultiGame";
 
+            GameConfig.gameType = "MultiGame";
             /* 初始化Websocket */
             App.gameConfig.toInitSocket();
-            App.gameConfig.on(GameEvent.ON_SERVER_CONNECTED, this.onGameConfigStatus.bind(this));
         }
-    }
-
-    private onGameConfigStatus(event:any):void {
-
-        /* StartView > ChooseActorStep */
-        this.toTransitionOut(1, -1);
     }
 
 

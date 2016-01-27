@@ -64,18 +64,10 @@ class KeyStep extends AbstractStepView {
         if (event.type == "mousedown" || event.type == "touchstart") {
 
             /* 在LEADER按下連線完成後，鎖定Channel人數，不讓人加入 */
-            App.gameConfig.on(GameEvent.CHANNEL_LOCKED, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 act: SocketEvent.LOCK_CHANNEL,
             });
-        }
-    }
-
-    private onGameConfigStatus(event:any):void {
-
-        if (event.type == GameEvent.CHANNEL_LOCKED) {
-            this.toTransitionOut(1, -1);
         }
     }
 

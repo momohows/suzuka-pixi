@@ -41,7 +41,7 @@ class GameConfig extends PIXI.Container {
 
         GameConfig.gameId = 0;
         GameConfig.totalMembers = 0;
-        GameConfig.gameActor = "";
+        GameConfig.gameActor = "LEADER";
         GameConfig.channelKey = "";
         GameConfig.isWaiting = false;
         GameConfig.isChannelLocked = false;

@@ -8,6 +8,8 @@
 
 class MultiGameStep extends AbstractStepView {
 
+    private action:boolean;
+
     constructor(name:string, resources:Object) {
 
         super(name, resources);
@@ -24,6 +26,7 @@ class MultiGameStep extends AbstractStepView {
 
     public toCreateElements():void {
 
+        this.action = false;
         this.toCreateGame();
         super.toCreateElements();
     }
@@ -42,16 +45,7 @@ class MultiGameStep extends AbstractStepView {
 
         if (event.status == "startGame") {
 
-            console.log("startGame");
-            setInterval(()=> {
-                App.gameConfig.toConnectSocket({
-                    key: GameConfig.channelKey,
-                    memberId: GameConfig.gameId,
-                    act: SocketEvent.MEMBER_TO_LEADER,
-                    gameStatus: "onMemberUpdate",
-                    racing: '0,0,0'
-                });
-            }, 300);
+            this.action = true;
         }
 
         if (event.status == "memberAction") {
@@ -95,19 +89,33 @@ class MultiGameStep extends AbstractStepView {
     private gameCon:PIXI.Container;
     private conRange:PIXI.Rectangle;
     private raceTrack:any;
+
     private toCreateGame():void {
+
+        this.gameCon = new PIXI.Container();
+        this.addChild(this.gameCon);
+
 
     }
 
 
     public toUpdate():void {
+
         super.toUpdate();
+        if (this.action) {
+            App.gameConfig.toConnectSocket({
+                key: GameConfig.channelKey,
+                memberId: GameConfig.gameId,
+                act: SocketEvent.MEMBER_TO_LEADER,
+                gameStatus: "onMemberUpdate",
+                racing: '0,0,0'
+            });
+        }
     }
 
     public onTransitionComplete(type:string, stepid:number = -1, pid:number = -1):void {
 
         super.onTransitionComplete(type, stepid, pid);
-
         if (type == "TRANSITION_IN_COMPLETE") {
 
             App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));

@@ -12,9 +12,8 @@
 
 class ChannelView extends AbstractView {
 
-    constructor(name:string, resources:Object, stepid:number) {
-
-        super(name, resources, stepid);
+    constructor(name:string, resources:Object, id:number, stepid:number) {
+        super(name, resources, id, stepid);
     }
 
     public toRemove():void {

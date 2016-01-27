@@ -11,9 +11,9 @@
 
 class GameView extends AbstractView {
 
-    constructor(name:string, resources:Object, stepid:number) {
+    constructor(name:string, resources:Object, id:number, stepid:number) {
 
-        super(name, resources, stepid);
+        super(name, resources, id, stepid);
     }
 
     public toRemove():void {

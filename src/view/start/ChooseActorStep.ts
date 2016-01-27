@@ -53,7 +53,6 @@ class ChooseActorStep extends AbstractStepView {
 
             GameConfig.gameActor = "LEADER";
             GameConfig.channelKey = GameUtil.toCreateGameKey();
-
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 act: SocketEvent.JOIN_CHANNEL,

@@ -7,19 +7,20 @@
 /// <reference path="../events/ViewEvent.ts"/>
 /// <reference path="../abstract/AbstractStepView.ts"/>
 class AbstractView extends PIXI.Container {
-
+    public id:number;
     public stepId:number;
     public name:string;
     public resources:Object;
     public stepView:AbstractStepView;
 
-    constructor(name:string, resourses:Object, stepid:number = 0) {
+    constructor(name:string, resourses:Object, id:number = 0, stepid:number = 0) {
 
         super();
 
         this.name = name;
         this.resources = resourses;
         this.alpha = 0;
+        this.id = id;
         this.stepId = stepid;
 
         $(window).resize(this.onResize.bind(this));
@@ -93,7 +94,12 @@ class AbstractView extends PIXI.Container {
     public toTransitionOut(pid:number = -1, stepid:number = -1):void {
 
         if (this.stepView) {
-            this.stepView.toTransitionOut(stepid, pid);
+            console.log("pid:" + pid + "/id:" + this.id);
+            if (pid == this.id) {
+                this.stepView.toTransitionOut(stepid, -1);
+            } else {
+                this.stepView.toTransitionOut(stepid, pid);
+            }
             return;
         }
 
