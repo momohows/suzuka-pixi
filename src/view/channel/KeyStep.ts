@@ -75,7 +75,6 @@ class KeyStep extends AbstractStepView {
     private onGameConfigStatus(event:any):void {
 
         if (event.type == GameEvent.CHANNEL_LOCKED) {
-
             this.toTransitionOut(1, -1);
         }
     }

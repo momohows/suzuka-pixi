@@ -243,7 +243,7 @@ var GameConfig = (function (_super) {
         }
         return GameConfig._instance;
     };
-    GameConfig.toReset = function () {
+    GameConfig.prototype.toReset = function () {
         GameConfig.gameId = 0;
         GameConfig.totalMembers = 0;
         GameConfig.gameActor = "";
@@ -252,13 +252,13 @@ var GameConfig = (function (_super) {
         GameConfig.isChannelLocked = false;
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
         GameConfig.channelMembers = '0,0,0,0';
-        GameConfig.memberDeviceData = '50,50|0,0|0,0|0,0';
+        GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
         GameConfig.memberRacingData = 'x,y,r|x,y,r|x,y,r|x,y,r';
-        GameConfig.memberVars = "50,50-0,0,0|50,50-0,0,0|50,50-0,0,0|50,50-0,0,0";
         GameConfig.memberData = [];
     };
-    GameConfig.toInit = function () {
-        GameConfig.toReset();
+    GameConfig.prototype.toInit = function () {
+        console.log("XXXX");
+        this.toReset();
     };
     GameConfig.prototype.toInitSocket = function () {
         if (!GameConfig.socketConnector) {
@@ -315,7 +315,7 @@ var GameConfig = (function (_super) {
                     }
                     if (GameConfig.gameActor == "LEADER") {
                         if (!GameConfig.isChannelLocked) {
-                            GameConfig.toSetMemberStatus(result.memberId - 1, 1);
+                            GameUtil.toSetMemberStatus(result.memberId - 1, 1);
                         }
                         GameUtil.toSetDeviceData(result.memberId - 1, result.device);
                         this.toUpdateChannelStatus();
@@ -329,7 +329,7 @@ var GameConfig = (function (_super) {
                     GameConfig.channelMembers = result.channelMembers;
                     GameConfig.memberDeviceData = result.deviceData;
                     GameConfig.isChannelLocked = result.channelLocked;
-                    GameConfig.totalMembers = GameConfig.toGetTotalMembers();
+                    GameConfig.totalMembers = GameUtil.toGetTotalMembers();
                     //console.clear();
                     console.log("==============================="
                         + "\n" + "key:" + GameConfig.channelKey
@@ -357,7 +357,7 @@ var GameConfig = (function (_super) {
                  **/
                 if (action == SocketEvent.UPDATE_GAME) {
                     /* 如果此時等於0，表示未加入或者是Lock Channel後才加入 */
-                    if (GameConfig.toGetMemberStatus(GameConfig.gameId - 1) == 0)
+                    if (GameUtil.toGetMemberStatus(GameConfig.gameId - 1) == 0)
                         return;
                     var status = result.gameStatus;
                     switch (status) {
@@ -383,7 +383,9 @@ var GameConfig = (function (_super) {
                         case "memberAction":
                             this.emit(GameEvent.ON_GAME_UPDATE, {
                                 type: GameEvent.ON_GAME_UPDATE,
-                                status: "memberAction"
+                                status: "memberAction",
+                                device: GameConfig.memberDeviceData,
+                                racing: GameConfig.memberRacingData
                             });
                             break;
                         case "stopGame":
@@ -405,7 +407,7 @@ var GameConfig = (function (_super) {
                         case "saveDeviceData":
                             break;
                         case "onMemberReady":
-                            GameConfig.toSetMemberStatus(result.memberId - 1, 2);
+                            GameUtil.toSetMemberStatus(result.memberId - 1, 2);
                             if (GameConfig.gameActor == "LEADER") {
                                 this.toConnectSocket({
                                     key: GameConfig.channelKey,
@@ -415,7 +417,7 @@ var GameConfig = (function (_super) {
                                     deviceData: GameConfig.memberDeviceData
                                 });
                             }
-                            var allMembersReady = GameConfig.toCheckMemberReady();
+                            var allMembersReady = GameUtil.toCheckMemberReady();
                             if (allMembersReady) {
                                 this.emit(GameEvent.ON_GAME_UPDATE, {
                                     type: GameEvent.ON_GAME_UPDATE,
@@ -481,39 +483,6 @@ var GameConfig = (function (_super) {
             channelMembers: GameConfig.channelMembers,
             deviceData: GameConfig.memberDeviceData
         });
-    };
-    GameConfig.toSetMemberStatus = function (id, status) {
-        var statusArr = GameConfig.channelMembers.split(",");
-        statusArr[id] = status;
-        GameConfig.channelMembers = '';
-        statusArr.forEach(function (item) {
-            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + ",";
-        });
-        GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
-    };
-    GameConfig.toGetMemberStatus = function (id) {
-        var arr = GameConfig.channelMembers.split(",");
-        return +arr[id];
-    };
-    GameConfig.toGetTotalMembers = function () {
-        var total = 0;
-        var memberArr = GameConfig.channelMembers.split(",");
-        memberArr.forEach(function (item) {
-            if (+item == 1) {
-                total += 1;
-            }
-        });
-        return total;
-    };
-    GameConfig.toCheckMemberReady = function () {
-        var total = 0;
-        var memberArr = GameConfig.channelMembers.split(",");
-        memberArr.forEach(function (item) {
-            if (+item == 2) {
-                total += 1;
-            }
-        });
-        return total == GameConfig.totalMembers ? true : false;
     };
     GameConfig.channelKey = "";
     return GameConfig;
@@ -1125,18 +1094,6 @@ var GameUtil;
         return key;
     }
     GameUtil.toCreateGameKey = toCreateGameKey;
-    function toGetDataVarsArr() {
-        var memberData = [];
-        GameConfig.memberVars.split("|").forEach(function (item, index) {
-            var dataObj = {
-                device: GameUtil.toSwapStrToNumberArr(item.split("-")[0]),
-                racing: GameUtil.toSwapStrToNumberArr(item.split("-")[1])
-            };
-            memberData.push(dataObj);
-        });
-        return memberData;
-    }
-    GameUtil.toGetDataVarsArr = toGetDataVarsArr;
     function toSwapStrToNumberArr(str) {
         var tmpArr = [];
         str.split(",").forEach(function (item) {
@@ -1164,6 +1121,43 @@ var GameUtil;
         return deviceData;
     }
     GameUtil.toGetDeviceData = toGetDeviceData;
+    function toSetMemberStatus(id, status) {
+        var statusArr = GameConfig.channelMembers.split(",");
+        statusArr[id] = status;
+        GameConfig.channelMembers = '';
+        statusArr.forEach(function (item) {
+            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + ",";
+        });
+        GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
+    }
+    GameUtil.toSetMemberStatus = toSetMemberStatus;
+    function toGetMemberStatus(id) {
+        var arr = GameConfig.channelMembers.split(",");
+        return +arr[id];
+    }
+    GameUtil.toGetMemberStatus = toGetMemberStatus;
+    function toGetTotalMembers() {
+        var total = 0;
+        var memberArr = GameConfig.channelMembers.split(",");
+        memberArr.forEach(function (item) {
+            if (+item == 1) {
+                total += 1;
+            }
+        });
+        return total;
+    }
+    GameUtil.toGetTotalMembers = toGetTotalMembers;
+    function toCheckMemberReady() {
+        var total = 0;
+        var memberArr = GameConfig.channelMembers.split(",");
+        memberArr.forEach(function (item) {
+            if (+item == 2) {
+                total += 1;
+            }
+        });
+        return total == GameConfig.totalMembers ? true : false;
+    }
+    GameUtil.toCheckMemberReady = toCheckMemberReady;
 })(GameUtil || (GameUtil = {}));
 /**
  * Created by susanph.huang on 2015/12/29.
@@ -1638,6 +1632,9 @@ var MultiGameStep = (function (_super) {
     __extends(MultiGameStep, _super);
     function MultiGameStep(name, resources) {
         _super.call(this, name, resources);
+        this.spdX = 5;
+        this.easing = 0.8;
+        this.action = false;
     }
     MultiGameStep.prototype.toRemove = function () {
         _super.prototype.toRemove.call(this);
@@ -1645,15 +1642,77 @@ var MultiGameStep = (function (_super) {
     MultiGameStep.prototype.onResize = function (event) {
         _super.prototype.onResize.call(this, event);
     };
+    MultiGameStep.prototype.onTransitionComplete = function (type, stepid, pid) {
+        if (stepid === void 0) { stepid = -1; }
+        if (pid === void 0) { pid = -1; }
+        _super.prototype.onTransitionComplete.call(this, type, stepid, pid);
+        if (type == "TRANSITION_IN_COMPLETE") {
+            App.gameConfig.toConnectSocket({
+                key: GameConfig.channelKey,
+                memberId: GameConfig.gameId,
+                act: SocketEvent.MEMBER_TO_LEADER,
+                gameStatus: "onMemberReady"
+            });
+        }
+    };
     MultiGameStep.prototype.toCreateElements = function () {
-        this.toCreateRacingStage();
+        this.toCreateRacingBG();
+        this.toCreateBall();
+        this.toUpdate();
         App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
         _super.prototype.toCreateElements.call(this);
     };
-    MultiGameStep.prototype.toCreateRacingStage = function () {
-        this.racingBG = new PIXI.Graphics();
-        var deviceArr = GameUtil.toGetDeviceData();
-        console.dir(deviceArr);
+    MultiGameStep.prototype.toCreateRacingBG = function () {
+        this.racingRange = new PIXI.Rectangle(0, 0, this.toGetMaxWidth(), this.toGetMinHeight());
+        console.log("racingRange:" + this.racingRange.width + "/" + this.racingRange.height);
+        this.racingCon = new PIXI.Container();
+        var bgX = 0;
+        for (var i = 0; i < GameUtil.toGetDeviceData().length; i++) {
+            if (GameUtil.toGetDeviceData()[i][0] > 0) {
+                this.racingBG = new PIXI.Graphics();
+                this.racingBG.beginFill(0x882222, 0.8);
+                this.racingBG.drawRect(0, 0, GameUtil.toGetDeviceData()[i][0], this.toGetMinHeight());
+                this.racingBG.endFill();
+                var txt = new PIXI.Text("D" + (i + 1), {
+                    font: '50px Menlo',
+                    fill: 0xffffff,
+                    align: 'left'
+                });
+                txt.x = (this.racingBG.width - txt.width) * 0.5;
+                txt.y = (this.racingBG.height - txt.height) - 100;
+                this.racingBG.addChild(txt);
+                this.racingBG.x = bgX;
+                this.racingCon.addChild(this.racingBG);
+                bgX = bgX + GameUtil.toGetDeviceData()[i][0];
+            }
+        }
+        var conX = GameConfig.gameId - 1 == 0 ? 0 : this.toGetConX(GameConfig.gameId);
+        this.racingCon.x = -1 * conX;
+        this.addChild(this.racingCon);
+    };
+    MultiGameStep.prototype.toCreateBall = function () {
+        this.ball = new PIXI.Graphics();
+        this.ball.beginFill(0xCCCCCC, 1);
+        this.ball.drawCircle(0, 0, 30);
+        this.ball.endFill();
+        this.ball.x = this.ball.width * 0.5;
+        this.ball.y = (this.racingCon.height - this.ball.height) * 0.5;
+        this.racingCon.addChild(this.ball);
+    };
+    MultiGameStep.prototype.toActionBall = function () {
+        this.action = true;
+    };
+    MultiGameStep.prototype.toUpdate = function () {
+        _super.prototype.toUpdate.call(this);
+        if (this.action) {
+            var dx = (this.ball.x + this.spdX) - this.ball.x;
+            var vx = dx * this.easing;
+            this.ball.x += vx;
+            if (this.ball.x > this.racingRange.width - (this.ball.width * 0.5)
+                || this.ball.x < 0 + (this.ball.width * 0.5)) {
+                this.spdX *= -1;
+            }
+        }
     };
     MultiGameStep.prototype.onGameConfigStatus = function (event) {
         if (event.status == "allMemberReady") {
@@ -1676,6 +1735,7 @@ var MultiGameStep = (function (_super) {
             }, 300);
         }
         if (event.status == "memberAction") {
+            this.toActionBall();
         }
     };
     MultiGameStep.prototype.toCreateCountDown = function () {
@@ -1702,21 +1762,30 @@ var MultiGameStep = (function (_super) {
             }
         }, 1000);
     };
-    MultiGameStep.prototype.toUpdate = function () {
-        _super.prototype.toUpdate.call(this);
-    };
-    MultiGameStep.prototype.onTransitionComplete = function (type, stepid, pid) {
-        if (stepid === void 0) { stepid = -1; }
-        if (pid === void 0) { pid = -1; }
-        _super.prototype.onTransitionComplete.call(this, type, stepid, pid);
-        if (type == "TRANSITION_IN_COMPLETE") {
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.MEMBER_TO_LEADER,
-                gameStatus: "onMemberReady"
-            });
+    MultiGameStep.prototype.toGetConX = function (id) {
+        var targetX = 0;
+        for (var i = 0; i < id - 1; i++) {
+            targetX = targetX + GameUtil.toGetDeviceData()[i][0];
         }
+        return targetX;
+    };
+    MultiGameStep.prototype.toGetMinHeight = function () {
+        var heightArr = [];
+        GameUtil.toGetDeviceData().forEach(function (item) {
+            if (item[1] > 0) {
+                heightArr.push(item[1]);
+            }
+        });
+        var minH = Math.min.apply(null, heightArr);
+        return minH;
+    };
+    MultiGameStep.prototype.toGetMaxWidth = function () {
+        var w = 0;
+        GameUtil.toGetDeviceData().forEach(function (item) {
+            if (item[0] > 0)
+                w += item[0];
+        });
+        return w;
     };
     return MultiGameStep;
 })(AbstractStepView);
@@ -1958,7 +2027,7 @@ var App;
         gameScene = new GameScene({
             width: window.innerWidth,
             height: window.innerHeight,
-            bgColor: 0x3339,
+            bgColor: 0xc2c2c2,
             transparent: false,
             fps: true
         });
@@ -2062,9 +2131,9 @@ var App;
     function toInitConfig() {
         Config.toInit();
         window["PixiConfig"] = Config;
-        GameConfig.toInit();
-        GameConfig.toSetMemberStatus(0, 1);
+        //GameUtil.toSetMemberStatus(0, 1);
         App.gameConfig = GameConfig.instance();
+        App.gameConfig.toInit();
         App.gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
         App.gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
         App.gameConfig.on(GameEvent.ON_JOIN_CHANNEL, onGameConfigStatus);
@@ -2082,8 +2151,11 @@ var App;
                 case GameEvent.ON_JOIN_CHANNEL:
                     break;
                 case GameEvent.ON_CHANNEL_STATUS:
-                    /* ChannelView > KeyStep */
-                    toCreatePage(2, 0);
+                    if (!GameConfig.isWaiting) {
+                        /* ChannelView > KeyStep */
+                        toCreatePage(2, 0);
+                        GameConfig.isWaiting = true;
+                    }
                     break;
             }
         }

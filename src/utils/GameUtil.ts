@@ -15,20 +15,6 @@ module GameUtil {
     }
 
 
-    export function toGetDataVarsArr():Array<Object> {
-
-        var memberData:Array<Object> = [];
-        GameConfig.memberVars.split("|").forEach((item, index)=> {
-            var dataObj:Object = {
-                device: GameUtil.toSwapStrToNumberArr(item.split("-")[0]),
-                racing: GameUtil.toSwapStrToNumberArr(item.split("-")[1])
-            };
-            memberData.push(dataObj);
-        });
-
-        return memberData;
-    }
-
     export function toSwapStrToNumberArr(str:string):Array<number> {
 
         var tmpArr:Array<number> = [];
@@ -37,6 +23,7 @@ module GameUtil {
         });
         return tmpArr;
     }
+
 
     export function toSetDeviceData(id:number, data:string):void {
 
@@ -57,5 +44,50 @@ module GameUtil {
             deviceData.push(GameUtil.toSwapStrToNumberArr(item));
         });
         return deviceData;
+    }
+
+
+    export function toSetMemberStatus(id:number, status:number):void {
+
+        var statusArr:Array<any> = GameConfig.channelMembers.split(",");
+        statusArr[id] = status;
+
+        GameConfig.channelMembers = '';
+        statusArr.forEach(item=> {
+            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + ",";
+        });
+
+        GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
+    }
+
+    export function toGetMemberStatus(id:number):number {
+
+        var arr:Array<any> = GameConfig.channelMembers.split(",");
+        return +arr[id];
+    }
+
+    export function toGetTotalMembers():number {
+
+        var total:number = 0;
+        var memberArr:Array<any> = GameConfig.channelMembers.split(",");
+        memberArr.forEach(item=> {
+            if (+item == 1) {
+                total += 1;
+            }
+        });
+        return total;
+    }
+
+    export function toCheckMemberReady():boolean {
+
+        var total:number = 0;
+        var memberArr:Array<any> = GameConfig.channelMembers.split(",");
+        memberArr.forEach(item=> {
+            if (+item == 2) {
+                total += 1;
+            }
+        });
+
+        return total == GameConfig.totalMembers ? true : false;
     }
 }

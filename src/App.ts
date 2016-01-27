@@ -33,6 +33,7 @@ module App {
         if (GameConfig.channelKey == "" || /[A-Za-z0-9]{8}/.test(GameConfig.channelKey) == false) {
 
             toCreatePage(0, 0);
+            //toCreatePage(3, 1);
 
         } else {
 
@@ -54,7 +55,7 @@ module App {
         gameScene = new GameScene({
             width: window.innerWidth,
             height: window.innerHeight,
-            bgColor: 0x3339,
+            bgColor: 0xc2c2c2,
             transparent: false,
             fps: true
         });
@@ -200,11 +201,9 @@ module App {
 
         Config.toInit();
         window["PixiConfig"] = Config;
-
-        GameConfig.toInit();
-        GameConfig.toSetMemberStatus(0, 1);
-
+        
         gameConfig = GameConfig.instance();
+        gameConfig.toInit();
         gameConfig.on(GameEvent.ON_SERVER_CONNECTED, onGameConfigStatus);
         gameConfig.on(GameEvent.ON_SERVER_DISCONNECTED, onGameConfigStatus);
         gameConfig.on(GameEvent.ON_JOIN_CHANNEL, onGameConfigStatus);
@@ -229,8 +228,11 @@ module App {
                     break;
 
                 case GameEvent.ON_CHANNEL_STATUS:
-                    /* ChannelView > KeyStep */
-                    toCreatePage(2, 0);
+                    if (!GameConfig.isWaiting) {
+                        /* ChannelView > KeyStep */
+                        toCreatePage(2, 0);
+                        GameConfig.isWaiting = true;
+                    }
                     break;
             }
         }
