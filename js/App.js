@@ -253,9 +253,9 @@ var GameConfig = (function (_super) {
         GameConfig.isWaiting = false;
         GameConfig.isChannelLocked = false;
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
-        GameConfig.channelMembers = '0,0,0,0';
+        GameConfig.channelMembers = '0|0|0|0';
         GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
-        GameConfig.memberRacingData = 'x,y,r|x,y,r|x,y,r|x,y,r';
+        GameConfig.memberRacingData = '0|0|0|0';
         GameConfig.memberData = [];
     };
     GameConfig.prototype.toInit = function () {
@@ -305,7 +305,6 @@ var GameConfig = (function (_super) {
                     if (GameConfig.gameActor == "LEADER") {
                         console.log(window.location.href + "?key=" + result.key);
                     }
-                    this.toKeepConnect();
                 }
                 /* 加入Channel後可取得Channel資訊 */
                 if (action == SocketEvent.GET_CHANNEL_STATUS) {
@@ -331,14 +330,6 @@ var GameConfig = (function (_super) {
                     GameConfig.memberDeviceData = result.deviceData;
                     GameConfig.isChannelLocked = result.channelLocked;
                     GameConfig.totalMembers = GameUtil.toGetTotalMembers();
-                    //console.clear();
-                    console.log("==============================="
-                        + "\n" + "key:" + GameConfig.channelKey
-                        + "\n" + "id:" + GameConfig.gameId
-                        + "\n" + "members:" + GameConfig.channelMembers
-                        + "\n" + "device:" + GameConfig.memberDeviceData
-                        + "\n" + "locked:" + GameConfig.isChannelLocked
-                        + "\n" + "===============================");
                 }
                 /* 鎖定Channel，阻止玩家加入 */
                 if (action == SocketEvent.LOCK_CHANNEL_SUCCESS) {
@@ -382,10 +373,10 @@ var GameConfig = (function (_super) {
                             });
                             break;
                         case "memberAction":
+                            GameConfig.memberRacingData = result.racing;
                             this.emit(GameEvent.ON_GAME_UPDATE, {
                                 type: GameEvent.ON_GAME_UPDATE,
                                 status: "memberAction",
-                                device: GameConfig.memberDeviceData,
                                 racing: GameConfig.memberRacingData
                             });
                             break;
@@ -410,13 +401,7 @@ var GameConfig = (function (_super) {
                         case "onMemberReady":
                             GameUtil.toSetMemberStatus(result.memberId - 1, 2);
                             if (GameConfig.gameActor == "LEADER") {
-                                this.toConnectSocket({
-                                    key: GameConfig.channelKey,
-                                    act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                                    channelLocked: GameConfig.isChannelLocked,
-                                    channelMembers: GameConfig.channelMembers,
-                                    deviceData: GameConfig.memberDeviceData
-                                });
+                                this.toUpdateChannelStatus();
                             }
                             var allMembersReady = GameUtil.toCheckMemberReady();
                             if (allMembersReady) {
@@ -427,10 +412,12 @@ var GameConfig = (function (_super) {
                             }
                             break;
                         case "onMemberUpdate":
+                            GameUtil.toSetRaceData(result.memberId - 1, result.racing);
                             this.toConnectSocket({
                                 key: GameConfig.channelKey,
                                 act: SocketEvent.UPDATE_GAME,
-                                gameStatus: "memberAction"
+                                gameStatus: "memberAction",
+                                racing: GameConfig.memberRacingData
                             });
                             break;
                     }
@@ -442,13 +429,7 @@ var GameConfig = (function (_super) {
              **/
             case SocketEvent.ON_CLOSE:
                 if (GameConfig.gameActor == "LEADER") {
-                    this.toConnectSocket({
-                        key: GameConfig.channelKey,
-                        act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                        channelLocked: GameConfig.isChannelLocked,
-                        channelMembers: GameConfig.channelMembers,
-                        deviceData: GameConfig.memberDeviceData
-                    });
+                    this.toUpdateChannelStatus();
                 }
                 this.socketConnector = null;
                 this.emit(GameEvent.ON_SERVER_DISCONNECTED, {
@@ -1136,9 +1117,9 @@ var GameUtil;
         return key;
     }
     GameUtil.toCreateGameKey = toCreateGameKey;
-    function toSwapStrToNumberArr(str) {
+    function toSwapStrToNumberArr(str, arg) {
         var tmpArr = [];
-        str.split(",").forEach(function (item) {
+        str.split(arg).forEach(function (item) {
             tmpArr.push(+item);
         });
         return tmpArr;
@@ -1158,29 +1139,39 @@ var GameUtil;
     function toGetDeviceData() {
         var deviceData = [];
         GameConfig.memberDeviceData.split("|").forEach(function (item, index) {
-            deviceData.push(GameUtil.toSwapStrToNumberArr(item));
+            deviceData.push(GameUtil.toSwapStrToNumberArr(item, ","));
         });
         return deviceData;
     }
     GameUtil.toGetDeviceData = toGetDeviceData;
-    function toSetMemberStatus(id, status) {
-        var statusArr = GameConfig.channelMembers.split(",");
-        statusArr[id] = status;
+    function toSetRaceData(id, value) {
+        var raceData = GameConfig.memberRacingData.split("|");
+        raceData[id] = value;
+        GameConfig.memberRacingData = "";
+        raceData.forEach(function (item, index) {
+            GameConfig.memberRacingData = GameConfig.memberRacingData + item + "|";
+        });
+        GameConfig.memberRacingData = GameConfig.memberRacingData.slice(0, -1);
+    }
+    GameUtil.toSetRaceData = toSetRaceData;
+    function toSetMemberStatus(id, value) {
+        var memberArr = GameConfig.channelMembers.split("|");
+        memberArr[id] = value;
         GameConfig.channelMembers = '';
-        statusArr.forEach(function (item) {
-            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + ",";
+        memberArr.forEach(function (item) {
+            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + "|";
         });
         GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
     }
     GameUtil.toSetMemberStatus = toSetMemberStatus;
     function toGetMemberStatus(id) {
-        var arr = GameConfig.channelMembers.split(",");
+        var arr = GameConfig.channelMembers.split("|");
         return +arr[id];
     }
     GameUtil.toGetMemberStatus = toGetMemberStatus;
     function toGetTotalMembers() {
         var total = 0;
-        var memberArr = GameConfig.channelMembers.split(",");
+        var memberArr = GameConfig.channelMembers.split("|");
         memberArr.forEach(function (item) {
             if (+item == 1) {
                 total += 1;
@@ -1191,7 +1182,7 @@ var GameUtil;
     GameUtil.toGetTotalMembers = toGetTotalMembers;
     function toCheckMemberReady() {
         var total = 0;
-        var memberArr = GameConfig.channelMembers.split(",");
+        var memberArr = GameConfig.channelMembers.split("|");
         memberArr.forEach(function (item) {
             if (+item == 2) {
                 total += 1;
@@ -1202,7 +1193,7 @@ var GameUtil;
     GameUtil.toCheckMemberReady = toCheckMemberReady;
     function toGetDeviceStartX(id) {
         var targetX = 0;
-        for (var i = 0; i < id - 1; i++) {
+        for (var i = 0; i < id; i++) {
             targetX = targetX + GameUtil.toGetDeviceData()[i][0];
         }
         return targetX;
@@ -1688,6 +1679,7 @@ var MultiGameStep = (function (_super) {
     __extends(MultiGameStep, _super);
     function MultiGameStep(name, resources) {
         _super.call(this, name, resources);
+        this.easing = 0.5;
     }
     MultiGameStep.prototype.toRemove = function () {
         _super.prototype.toRemove.call(this);
@@ -1713,6 +1705,7 @@ var MultiGameStep = (function (_super) {
             this.action = true;
         }
         if (event.status == "memberAction") {
+            this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
         }
     };
     MultiGameStep.prototype.toCreateCountDown = function () {
@@ -1737,18 +1730,70 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateGame = function () {
+        var _this = this;
         this.gameCon = new PIXI.Container();
         this.addChild(this.gameCon);
+        GameUtil.toGetDeviceData().forEach(function (item, index) {
+            var w = item[0];
+            if (w > 0) {
+                var tmpBg = new PIXI.Graphics();
+                tmpBg.beginFill(Math.random() * 0xFFFFFF, 1);
+                tmpBg.drawRect(0, 0, w, GameUtil.toGetAllDeviceMinHeight());
+                tmpBg.endFill();
+                var bgTitle = new PIXI.Text("DEVICE" + (index), {
+                    font: '20px Arial',
+                    fill: 0xffffff,
+                    align: 'center'
+                });
+                bgTitle.x = (tmpBg.width - bgTitle.width) * 0.5;
+                bgTitle.y = tmpBg.height - bgTitle.height - 50;
+                tmpBg.addChild(bgTitle);
+                tmpBg.x = index == 0 ? 0 : GameUtil.toGetDeviceStartX(index);
+                _this.gameCon.addChild(tmpBg);
+            }
+        });
+        this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
+        this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
+        this.toCreateBall();
+    };
+    MultiGameStep.prototype.toCreateBall = function () {
+        var ballTotal = GameUtil.toGetTotalMembers();
+        this.spdArr = [5, 7, 8, 3];
+        this.allBalls = [];
+        this.vxArr = [];
+        for (var i = 0; i < ballTotal; i++) {
+            this.ball = new PIXI.Graphics();
+            this.ball.beginFill(0xc2c2c2, 1);
+            this.ball.drawCircle(0, 0, 15);
+            this.ball.endFill();
+            this.ball.x = this.ball.width * 0.5;
+            this.ball.y = ((this.gameCon.height - (this.ball.height * ballTotal)) * 0.5) + (i * (this.ball.height + 10));
+            this.gameCon.addChild(this.ball);
+            this.allBalls.push(this.ball);
+            this.vxArr.push(1);
+        }
+    };
+    MultiGameStep.prototype.toActionBall = function () {
+        for (var i = 0; i < this.allBalls.length; i++) {
+            var targetBall = this.allBalls[i];
+            var targetX = targetBall.x + this.spdArr[i];
+            targetBall.x += (targetX - targetBall.x) * this.easing * this.vxArr[i];
+            if (targetBall.x > (GameUtil.toGetAllDeviceMaxWidth() - (targetBall.width * 0.5))
+                || targetBall.x < 0 + (targetBall.width * 0.5)) {
+                this.vxArr[i] *= -1;
+            }
+        }
     };
     MultiGameStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
         if (this.action) {
+            this.toActionBall();
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 memberId: GameConfig.gameId,
                 act: SocketEvent.MEMBER_TO_LEADER,
                 gameStatus: "onMemberUpdate",
-                racing: '0,0,0'
+                racing: this.spdArr[GameConfig.gameId - 1].toString()
             });
         }
     };
@@ -1998,6 +2043,7 @@ var App;
             App.gameConfig.toInitSocket();
         }
     }
+    /* ============================================= */
     /**
      * CreateGame
      */
@@ -2006,7 +2052,7 @@ var App;
         gameScene = new GameScene({
             width: window.innerWidth,
             height: window.innerHeight,
-            bgColor: 0xc2c2c2,
+            bgColor: 0x222222,
             transparent: false,
             fps: true
         });
@@ -2017,6 +2063,7 @@ var App;
         App.loadingUI = new LoadingUI();
         gameScene.addChild(App.loadingUI);
     }
+    /* ============================================= */
     /**
      * Resource
      * */
@@ -2064,6 +2111,7 @@ var App;
             toCheckUrl();
         }
     }
+    /* ============================================= */
     /**
      * CreatePage
      * */
@@ -2104,6 +2152,7 @@ var App;
             toCreatePage(event.id, event.stepid);
         }
     }
+    /* ============================================= */
     /**
      * GameConfig
      * */

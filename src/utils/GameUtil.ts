@@ -60,10 +60,10 @@ module GameUtil {
         return key;
     }
 
-    export function toSwapStrToNumberArr(str:string):Array<number> {
+    export function toSwapStrToNumberArr(str:string, arg:string):Array<number> {
 
         var tmpArr:Array<number> = [];
-        str.split(",").forEach(item=> {
+        str.split(arg).forEach(item=> {
             tmpArr.push(+item);
         });
         return tmpArr;
@@ -85,19 +85,32 @@ module GameUtil {
 
         var deviceData:Array<any> = [];
         GameConfig.memberDeviceData.split("|").forEach((item, index)=> {
-            deviceData.push(GameUtil.toSwapStrToNumberArr(item));
+            deviceData.push(GameUtil.toSwapStrToNumberArr(item, ","));
         });
         return deviceData;
     }
 
-    export function toSetMemberStatus(id:number, status:number):void {
+    export function toSetRaceData(id:number, value:number):void {
 
-        var statusArr:Array<any> = GameConfig.channelMembers.split(",");
-        statusArr[id] = status;
+        var raceData:Array<any> = GameConfig.memberRacingData.split("|");
+        raceData[id] = value;
+
+        GameConfig.memberRacingData = "";
+        raceData.forEach((item, index)=> {
+            GameConfig.memberRacingData = GameConfig.memberRacingData + item + "|";
+        });
+
+        GameConfig.memberRacingData = GameConfig.memberRacingData.slice(0, -1);
+    }
+
+    export function toSetMemberStatus(id:number, value:number):void {
+
+        var memberArr:Array<any> = GameConfig.channelMembers.split("|");
+        memberArr[id] = value;
 
         GameConfig.channelMembers = '';
-        statusArr.forEach(item=> {
-            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + ",";
+        memberArr.forEach(item=> {
+            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + "|";
         });
 
         GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
@@ -105,14 +118,14 @@ module GameUtil {
 
     export function toGetMemberStatus(id:number):number {
 
-        var arr:Array<any> = GameConfig.channelMembers.split(",");
+        var arr:Array<any> = GameConfig.channelMembers.split("|");
         return +arr[id];
     }
 
     export function toGetTotalMembers():number {
 
         var total:number = 0;
-        var memberArr:Array<any> = GameConfig.channelMembers.split(",");
+        var memberArr:Array<any> = GameConfig.channelMembers.split("|");
         memberArr.forEach(item=> {
             if (+item == 1) {
                 total += 1;
@@ -124,7 +137,7 @@ module GameUtil {
     export function toCheckMemberReady():boolean {
 
         var total:number = 0;
-        var memberArr:Array<any> = GameConfig.channelMembers.split(",");
+        var memberArr:Array<any> = GameConfig.channelMembers.split("|");
         memberArr.forEach(item=> {
             if (+item == 2) {
                 total += 1;
@@ -137,7 +150,7 @@ module GameUtil {
     export function toGetDeviceStartX(id:number):number {
 
         var targetX:number = 0;
-        for (var i:number = 0; i < id - 1; i++) {
+        for (var i:number = 0; i < id; i++) {
             targetX = targetX + GameUtil.toGetDeviceData()[i][0];
         }
         return targetX;

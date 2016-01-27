@@ -47,9 +47,10 @@ class GameConfig extends PIXI.Container {
         GameConfig.isChannelLocked = false;
 
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
-        GameConfig.channelMembers = '0,0,0,0';
+        GameConfig.channelMembers = '0|0|0|0';
         GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
-        GameConfig.memberRacingData = 'x,y,r|x,y,r|x,y,r|x,y,r';
+        GameConfig.memberRacingData = '0|0|0|0';
+
         GameConfig.memberData = [];
     }
 
@@ -124,7 +125,7 @@ class GameConfig extends PIXI.Container {
                     if (GameConfig.gameActor == "LEADER") {
                         console.log(window.location.href + "?key=" + result.key);
                     }
-                    this.toKeepConnect();
+                    //this.toKeepConnect();
                     /* 正式上線砍掉 */
                 }
 
@@ -160,16 +161,15 @@ class GameConfig extends PIXI.Container {
                     GameConfig.memberDeviceData = result.deviceData;
                     GameConfig.isChannelLocked = result.channelLocked;
                     GameConfig.totalMembers = GameUtil.toGetTotalMembers();
-                    //console.clear();
-                    console.log(
-                        "==============================="
-                        + "\n" + "key:" + GameConfig.channelKey
-                        + "\n" + "id:" + GameConfig.gameId
-                        + "\n" + "members:" + GameConfig.channelMembers
-                        + "\n" + "device:" + GameConfig.memberDeviceData
-                        + "\n" + "locked:" + GameConfig.isChannelLocked
-                        + "\n" + "==============================="
-                    );
+                    /*console.log(
+                     "==============================="
+                     + "\n" + "key:" + GameConfig.channelKey
+                     + "\n" + "id:" + GameConfig.gameId
+                     + "\n" + "members:" + GameConfig.channelMembers
+                     + "\n" + "device:" + GameConfig.memberDeviceData
+                     + "\n" + "locked:" + GameConfig.isChannelLocked
+                     + "\n" + "==============================="
+                     );*/
                 }
 
                 /* 鎖定Channel，阻止玩家加入 */
@@ -227,10 +227,11 @@ class GameConfig extends PIXI.Container {
 
                         case "memberAction":
 
+                            GameConfig.memberRacingData = result.racing;
+
                             this.emit(GameEvent.ON_GAME_UPDATE, {
                                 type: GameEvent.ON_GAME_UPDATE,
                                 status: "memberAction",
-                                device: GameConfig.memberDeviceData,
                                 racing: GameConfig.memberRacingData
                             });
                             break;
@@ -263,13 +264,7 @@ class GameConfig extends PIXI.Container {
 
                             GameUtil.toSetMemberStatus(result.memberId - 1, 2);
                             if (GameConfig.gameActor == "LEADER") {
-                                this.toConnectSocket({
-                                    key: GameConfig.channelKey,
-                                    act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                                    channelLocked: GameConfig.isChannelLocked,
-                                    channelMembers: GameConfig.channelMembers,
-                                    deviceData: GameConfig.memberDeviceData
-                                });
+                                this.toUpdateChannelStatus();
                             }
 
                             var allMembersReady:boolean = GameUtil.toCheckMemberReady();
@@ -283,10 +278,12 @@ class GameConfig extends PIXI.Container {
 
                         case "onMemberUpdate":
 
+                            GameUtil.toSetRaceData(result.memberId - 1, result.racing);
                             this.toConnectSocket({
                                 key: GameConfig.channelKey,
                                 act: SocketEvent.UPDATE_GAME,
                                 gameStatus: "memberAction",
+                                racing: GameConfig.memberRacingData
                             });
                             break;
                     }
@@ -303,13 +300,7 @@ class GameConfig extends PIXI.Container {
 
                 if (GameConfig.gameActor == "LEADER") {
 
-                    this.toConnectSocket({
-                        key: GameConfig.channelKey,
-                        act: SocketEvent.UPDATE_CHANNEL_STATUS,
-                        channelLocked: GameConfig.isChannelLocked,
-                        channelMembers: GameConfig.channelMembers,
-                        deviceData: GameConfig.memberDeviceData
-                    });
+                    this.toUpdateChannelStatus();
                 }
 
                 this.socketConnector = null;
@@ -359,7 +350,6 @@ class GameConfig extends PIXI.Container {
             deviceData: GameConfig.memberDeviceData
         });
     }
-
 
 
 }

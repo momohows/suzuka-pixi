@@ -56,7 +56,7 @@ module App {
         gameScene = new GameScene({
             width: window.innerWidth,
             height: window.innerHeight,
-            bgColor: 0xc2c2c2,
+            bgColor: 0x222222,
             transparent: false,
             fps: true
         });
