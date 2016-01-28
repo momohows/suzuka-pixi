@@ -254,7 +254,8 @@ var GameConfig = (function (_super) {
         GameConfig.isChannelLocked = false;
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
         GameConfig.channelMembers = '0|0|0|0';
-        GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
+        //GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
+        GameConfig.memberDeviceData = '360,640|320,568|0,0|0,0';
         GameConfig.memberRacingData = '0|0|0|0';
         GameConfig.memberData = [];
     };
@@ -305,6 +306,7 @@ var GameConfig = (function (_super) {
                     if (GameConfig.gameActor == "LEADER") {
                         console.log(window.location.href + "?key=" + result.key);
                     }
+                    this.toKeepConnect();
                 }
                 /* 加入Channel後可取得Channel資訊 */
                 if (action == SocketEvent.GET_CHANNEL_STATUS) {
@@ -1212,6 +1214,13 @@ var GameUtil;
         return w;
     }
     GameUtil.toGetAllDeviceMaxWidth = toGetAllDeviceMaxWidth;
+    function toFittingElementOnRate(element, parent) {
+        var wRate = parent.width / element.width;
+        var hRate = parent.height / element.height;
+        var targetRate = wRate < hRate ? wRate : hRate;
+        element.scale.x = element.scale.y = targetRate - 0.02;
+    }
+    GameUtil.toFittingElementOnRate = toFittingElementOnRate;
 })(GameUtil || (GameUtil = {}));
 /**
  * Created by susanph.huang on 2015/12/29.
@@ -1667,11 +1676,49 @@ var SingleGameStep = (function (_super) {
  */
 var GameContainer = (function (_super) {
     __extends(GameContainer, _super);
-    function GameContainer() {
+    function GameContainer(resource) {
         _super.call(this);
+        this.resource = resource;
+        this.toCreateGuide();
         this.toCreateElements();
     }
     GameContainer.prototype.toCreateElements = function () {
+        this.deviceRange = new PIXI.Rectangle(0, 0, GameUtil.toGetAllDeviceMaxWidth(), GameUtil.toGetAllDeviceMinHeight());
+        this.racingCon = new PIXI.Container();
+        this.addChild(this.racingCon);
+        this.raceTrack = new PIXI.Sprite(this.resource["test_track"].texture);
+        this.raceTrack.anchor.x = 0.5;
+        this.raceTrack.x = this.raceTrack.width * 0.5;
+        this.raceTrack.anchor.y = 0.5;
+        this.raceTrack.y = this.raceTrack.height * 0.5;
+        this.racingCon.addChild(this.raceTrack);
+        GameUtil.toFittingElementOnRate(this.racingCon, this.deviceRange);
+        this.racingCon.x = (this.deviceRange.width - this.racingCon.width) * 0.5;
+        this.racingCon.y = (this.deviceRange.height - this.racingCon.height) * 0.5;
+    };
+    GameContainer.prototype.toCreateGuide = function () {
+        var _this = this;
+        this.guideCon = new PIXI.Container();
+        this.addChild(this.guideCon);
+        GameUtil.toGetDeviceData().forEach(function (item, index) {
+            var w = item[0];
+            if (w > 0) {
+                var tmpBg = new PIXI.Graphics();
+                tmpBg.beginFill(0x330000, 1);
+                tmpBg.drawRect(0, 0, w, GameUtil.toGetAllDeviceMinHeight());
+                tmpBg.endFill();
+                var bgTitle = new PIXI.Text("DEVICE" + (index), {
+                    font: '20px Arial',
+                    fill: 0xffffff,
+                    align: 'center'
+                });
+                bgTitle.x = (tmpBg.width - bgTitle.width) * 0.5;
+                bgTitle.y = tmpBg.height - bgTitle.height - 80;
+                tmpBg.addChild(bgTitle);
+                tmpBg.x = index == 0 ? 0 : GameUtil.toGetDeviceStartX(index);
+                _this.guideCon.addChild(tmpBg);
+            }
+        });
     };
     return GameContainer;
 })(PIXI.Container);
@@ -1709,24 +1756,28 @@ var MultiGameStep = (function (_super) {
     };
     MultiGameStep.prototype.toCreateElements = function () {
         this.action = false;
+        this.gameScene = "";
         this.toCreateGame();
         _super.prototype.toCreateElements.call(this);
     };
     MultiGameStep.prototype.onGameConfigStatus = function (event) {
-        if (event.status == "allMemberReady") {
-            if (GameConfig.gameActor == "LEADER") {
-                this.toCreateCountDown();
-            }
-        }
-        if (event.status == "onCountDown") {
-            console.log("countDown:" + event.countDown);
-        }
-        if (event.status == "startGame") {
-            this.action = true;
-        }
-        if (event.status == "memberAction") {
-            console.clear();
-            console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
+        switch (event.status) {
+            case "allMemberReady":
+                if (GameConfig.gameActor == "LEADER") {
+                    this.toCreateCountDown();
+                }
+                break;
+            case "onCountDown":
+                console.log("countDown:" + event.countDown);
+                break;
+            case "startGame":
+                this.action = true;
+                break;
+            case "memberAction":
+                //console.clear();
+                //console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
+                //this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
+                break;
         }
     };
     MultiGameStep.prototype.toCreateCountDown = function () {
@@ -1751,6 +1802,10 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateGame = function () {
+        this.gameCon = new GameContainer(this.resources);
+        this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
+        this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
+        this.addChild(this.gameCon);
     };
     MultiGameStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
@@ -2047,7 +2102,7 @@ var App;
         RES.toQueueGroups("home_assets", 1);
         RES.toQueueGroups("start_assets", 2);
         RES.toQueueGroups("channel_assets", 3);
-        RES.toQueueGroups("play_assets", 4);
+        RES.toQueueGroups("game_assets", 4);
         RES.toQueueGroups("result_assets", 5);
         RES.toLoadGroup();
     }
@@ -2069,7 +2124,7 @@ var App;
         if (complete == "channel_assets") {
             viewData[2]["isLoaded"] = true;
         }
-        if (complete == "play_assets") {
+        if (complete == "game_assets") {
             viewData[3]["isLoaded"] = true;
         }
         if (complete == "result_assets") {

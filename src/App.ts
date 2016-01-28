@@ -33,6 +33,7 @@ module App {
         if (GameConfig.channelKey == "" || /[A-Za-z0-9]{8}/.test(GameConfig.channelKey) == false) {
 
             toCreatePage(0, 0);
+            //toCreatePage(3, 1);
 
         } else {
 
@@ -95,7 +96,7 @@ module App {
         RES.toQueueGroups("home_assets", 1);
         RES.toQueueGroups("start_assets", 2);
         RES.toQueueGroups("channel_assets", 3);
-        RES.toQueueGroups("play_assets", 4);
+        RES.toQueueGroups("game_assets", 4);
         RES.toQueueGroups("result_assets", 5);
         RES.toLoadGroup();
     }
@@ -125,7 +126,7 @@ module App {
             viewData[2]["isLoaded"] = true;
         }
 
-        if (complete == "play_assets") {
+        if (complete == "game_assets") {
             viewData[3]["isLoaded"] = true;
         }
 

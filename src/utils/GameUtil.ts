@@ -154,4 +154,13 @@ module GameUtil {
 
         return w;
     }
+
+    export function toFittingElementOnRate(element:any, parent:any):void {
+
+        var wRate:number = parent.width / element.width;
+        var hRate:number = parent.height / element.height;
+        var targetRate:number = wRate < hRate ? wRate : hRate;
+        element.scale.x = element.scale.y = targetRate - 0.02;
+    }
+
 }

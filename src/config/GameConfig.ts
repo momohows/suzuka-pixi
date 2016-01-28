@@ -48,7 +48,8 @@ class GameConfig extends PIXI.Container {
 
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
         GameConfig.channelMembers = '0|0|0|0';
-        GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
+        //GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
+        GameConfig.memberDeviceData = '360,640|320,568|0,0|0,0';
         GameConfig.memberRacingData = '0|0|0|0';
 
         GameConfig.memberData = [];
@@ -125,7 +126,7 @@ class GameConfig extends PIXI.Container {
                     if (GameConfig.gameActor == "LEADER") {
                         console.log(window.location.href + "?key=" + result.key);
                     }
-                    //this.toKeepConnect();
+                    this.toKeepConnect();
                     /* 正式上線砍掉 */
                 }
 

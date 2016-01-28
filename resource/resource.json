@@ -37,11 +37,15 @@
       ]
     },
     {
-      "name": "play_assets",
+      "name": "game_assets",
       "resources": [
         {
-          "name": "play_bg",
-          "url": "resource/assets/play/play_bg.jpg"
+          "name": "game_bg",
+          "url": "resource/assets/game/game_bg.jpg"
+        },
+        {
+          "name": "test_track",
+          "url": "resource/assets/game/test_track.png"
         }
       ]
     },

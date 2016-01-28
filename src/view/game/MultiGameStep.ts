@@ -11,6 +11,7 @@
 class MultiGameStep extends AbstractStepView {
 
     private action:boolean;
+    private gameScene:string;
 
     constructor(name:string, resources:Object) {
 
@@ -29,30 +30,36 @@ class MultiGameStep extends AbstractStepView {
     public toCreateElements():void {
 
         this.action = false;
+        this.gameScene = "";
+
         this.toCreateGame();
         super.toCreateElements();
     }
 
     private onGameConfigStatus(event:any) {
 
-        if (event.status == "allMemberReady") {
-            if (GameConfig.gameActor == "LEADER") {
-                this.toCreateCountDown();
-            }
-        }
 
-        if (event.status == "onCountDown") {
-            console.log("countDown:" + event.countDown);
-        }
+        switch (event.status) {
 
-        if (event.status == "startGame") {
-            this.action = true;
-        }
+            case "allMemberReady":
+                if (GameConfig.gameActor == "LEADER") {
+                    this.toCreateCountDown();
+                }
+                break;
 
-        if (event.status == "memberAction") {
-            console.clear();
-            console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
-            //this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
+            case "onCountDown":
+                console.log("countDown:" + event.countDown);
+                break;
+
+            case "startGame":
+                this.action = true;
+                break;
+
+            case "memberAction":
+                //console.clear();
+                //console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
+                //this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
+                break;
         }
     }
 
@@ -96,6 +103,10 @@ class MultiGameStep extends AbstractStepView {
 
     private toCreateGame():void {
 
+        this.gameCon = new GameContainer(this.resources);
+        this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
+        this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
+        this.addChild(this.gameCon);
     }
 
 
