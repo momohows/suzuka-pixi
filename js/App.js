@@ -315,9 +315,11 @@ var GameConfig = (function (_super) {
                     }
                     if (GameConfig.gameActor == "LEADER") {
                         if (!GameConfig.isChannelLocked) {
-                            GameUtil.toSetMemberStatus(result.memberId - 1, 1);
+                            GameConfig.channelMembers =
+                                GameUtil.toSetValueInStr(result.memberId - 1, 1, GameConfig.channelMembers);
                         }
-                        GameUtil.toSetDeviceData(result.memberId - 1, result.device);
+                        GameConfig.memberDeviceData =
+                            GameUtil.toSetValueInStr(result.memberId - 1, result.device, GameConfig.memberDeviceData);
                         this.toUpdateChannelStatus();
                     }
                     this.emit(GameEvent.ON_CHANNEL_STATUS, {
@@ -330,6 +332,13 @@ var GameConfig = (function (_super) {
                     GameConfig.memberDeviceData = result.deviceData;
                     GameConfig.isChannelLocked = result.channelLocked;
                     GameConfig.totalMembers = GameUtil.toGetTotalMembers();
+                    console.log("==============================="
+                        + "\n" + "key:" + GameConfig.channelKey
+                        + "\n" + "id:" + GameConfig.gameId
+                        + "\n" + "members:" + GameConfig.channelMembers
+                        + "\n" + "device:" + GameConfig.memberDeviceData
+                        + "\n" + "locked:" + GameConfig.isChannelLocked
+                        + "\n" + "===============================");
                 }
                 /* 鎖定Channel，阻止玩家加入 */
                 if (action == SocketEvent.LOCK_CHANNEL_SUCCESS) {
@@ -341,7 +350,8 @@ var GameConfig = (function (_super) {
                 }
                 /* MEMBER加入Channel後，傳送Device資訊至LEADER儲存 */
                 if (action == SocketEvent.SAVE_DEVICE_DATA) {
-                    GameUtil.toSetDeviceData(result.memberId - 1, result.device);
+                    GameConfig.memberDeviceData =
+                        GameUtil.toSetValueInStr(result.memberId - 1, result.device, GameConfig.memberDeviceData);
                 }
                 /**
                  * 遊戲開始：
@@ -399,7 +409,8 @@ var GameConfig = (function (_super) {
                         case "saveDeviceData":
                             break;
                         case "onMemberReady":
-                            GameUtil.toSetMemberStatus(result.memberId - 1, 2);
+                            GameConfig.channelMembers =
+                                GameUtil.toSetValueInStr(result.memberId - 1, 2, GameConfig.channelMembers);
                             if (GameConfig.gameActor == "LEADER") {
                                 this.toUpdateChannelStatus();
                             }
@@ -412,7 +423,8 @@ var GameConfig = (function (_super) {
                             }
                             break;
                         case "onMemberUpdate":
-                            GameUtil.toSetRaceData(result.memberId - 1, result.racing);
+                            GameConfig.memberRacingData =
+                                GameUtil.toSetValueInStr(result.memberId - 1, result.racing, GameConfig.memberRacingData);
                             this.toConnectSocket({
                                 key: GameConfig.channelKey,
                                 act: SocketEvent.UPDATE_GAME,
@@ -1125,17 +1137,17 @@ var GameUtil;
         return tmpArr;
     }
     GameUtil.toSwapStrToNumberArr = toSwapStrToNumberArr;
-    function toSetDeviceData(id, data) {
-        var tmpStr = "";
-        GameConfig.memberDeviceData.split("|").forEach(function (item, index) {
+    function toSetValueInStr(id, value, targetStr) {
+        var tmpStr = '';
+        targetStr.split("|").forEach(function (item, index) {
             if (index == id) {
-                item = data;
+                item = value;
             }
-            tmpStr = tmpStr + item + "|";
+            tmpStr = tmpStr + item.toString() + "|";
         });
-        GameConfig.memberDeviceData = tmpStr.slice(0, -1);
+        return tmpStr.slice(0, -1);
     }
-    GameUtil.toSetDeviceData = toSetDeviceData;
+    GameUtil.toSetValueInStr = toSetValueInStr;
     function toGetDeviceData() {
         var deviceData = [];
         GameConfig.memberDeviceData.split("|").forEach(function (item, index) {
@@ -1144,26 +1156,6 @@ var GameUtil;
         return deviceData;
     }
     GameUtil.toGetDeviceData = toGetDeviceData;
-    function toSetRaceData(id, value) {
-        var raceData = GameConfig.memberRacingData.split("|");
-        raceData[id] = value;
-        GameConfig.memberRacingData = "";
-        raceData.forEach(function (item, index) {
-            GameConfig.memberRacingData = GameConfig.memberRacingData + item + "|";
-        });
-        GameConfig.memberRacingData = GameConfig.memberRacingData.slice(0, -1);
-    }
-    GameUtil.toSetRaceData = toSetRaceData;
-    function toSetMemberStatus(id, value) {
-        var memberArr = GameConfig.channelMembers.split("|");
-        memberArr[id] = value;
-        GameConfig.channelMembers = '';
-        memberArr.forEach(function (item) {
-            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + "|";
-        });
-        GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
-    }
-    GameUtil.toSetMemberStatus = toSetMemberStatus;
     function toGetMemberStatus(id) {
         var arr = GameConfig.channelMembers.split("|");
         return +arr[id];
@@ -1191,6 +1183,7 @@ var GameUtil;
         return total == GameConfig.totalMembers ? true : false;
     }
     GameUtil.toCheckMemberReady = toCheckMemberReady;
+    /* Game */
     function toGetDeviceStartX(id) {
         var targetX = 0;
         for (var i = 0; i < id; i++) {
@@ -1670,16 +1663,43 @@ var SingleGameStep = (function (_super) {
     return SingleGameStep;
 })(AbstractStepView);
 /**
+ * Created by susanph.huang on 2016/1/27.
+ */
+var GameContainer = (function (_super) {
+    __extends(GameContainer, _super);
+    function GameContainer() {
+        _super.call(this);
+        this.toCreateElements();
+    }
+    GameContainer.prototype.toCreateElements = function () {
+    };
+    return GameContainer;
+})(PIXI.Container);
+/**
+ * Created by susanph.huang on 2016/1/28.
+ */
+var RaceTrack = (function (_super) {
+    __extends(RaceTrack, _super);
+    function RaceTrack() {
+        _super.call(this);
+        this.toCreateElements();
+    }
+    RaceTrack.prototype.toCreateElements = function () {
+    };
+    return RaceTrack;
+})(PIXI.Container);
+/**
  * Created by susanph.huang on 2015/12/29.
  */
 /// <reference path="../../abstract/AbstractStepView.ts"/>
 /// <reference path="../../utils/FrameUtil.ts"/>
 /// <reference path="../../utils/CreateUtil.ts"/>
+/// <reference path="./GameContainer.ts"/>
+/// <reference path="./RaceTrack.ts"/>
 var MultiGameStep = (function (_super) {
     __extends(MultiGameStep, _super);
     function MultiGameStep(name, resources) {
         _super.call(this, name, resources);
-        this.easing = 0.5;
     }
     MultiGameStep.prototype.toRemove = function () {
         _super.prototype.toRemove.call(this);
@@ -1705,7 +1725,8 @@ var MultiGameStep = (function (_super) {
             this.action = true;
         }
         if (event.status == "memberAction") {
-            this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
+            console.clear();
+            console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
         }
     };
     MultiGameStep.prototype.toCreateCountDown = function () {
@@ -1730,70 +1751,16 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateGame = function () {
-        var _this = this;
-        this.gameCon = new PIXI.Container();
-        this.addChild(this.gameCon);
-        GameUtil.toGetDeviceData().forEach(function (item, index) {
-            var w = item[0];
-            if (w > 0) {
-                var tmpBg = new PIXI.Graphics();
-                tmpBg.beginFill(Math.random() * 0xFFFFFF, 1);
-                tmpBg.drawRect(0, 0, w, GameUtil.toGetAllDeviceMinHeight());
-                tmpBg.endFill();
-                var bgTitle = new PIXI.Text("DEVICE" + (index), {
-                    font: '20px Arial',
-                    fill: 0xffffff,
-                    align: 'center'
-                });
-                bgTitle.x = (tmpBg.width - bgTitle.width) * 0.5;
-                bgTitle.y = tmpBg.height - bgTitle.height - 50;
-                tmpBg.addChild(bgTitle);
-                tmpBg.x = index == 0 ? 0 : GameUtil.toGetDeviceStartX(index);
-                _this.gameCon.addChild(tmpBg);
-            }
-        });
-        this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
-        this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
-        this.toCreateBall();
-    };
-    MultiGameStep.prototype.toCreateBall = function () {
-        var ballTotal = GameUtil.toGetTotalMembers();
-        this.spdArr = [5, 7, 8, 3];
-        this.allBalls = [];
-        this.vxArr = [];
-        for (var i = 0; i < ballTotal; i++) {
-            this.ball = new PIXI.Graphics();
-            this.ball.beginFill(0xc2c2c2, 1);
-            this.ball.drawCircle(0, 0, 15);
-            this.ball.endFill();
-            this.ball.x = this.ball.width * 0.5;
-            this.ball.y = ((this.gameCon.height - (this.ball.height * ballTotal)) * 0.5) + (i * (this.ball.height + 10));
-            this.gameCon.addChild(this.ball);
-            this.allBalls.push(this.ball);
-            this.vxArr.push(1);
-        }
-    };
-    MultiGameStep.prototype.toActionBall = function () {
-        for (var i = 0; i < this.allBalls.length; i++) {
-            var targetBall = this.allBalls[i];
-            var targetX = targetBall.x + this.spdArr[i];
-            targetBall.x += (targetX - targetBall.x) * this.easing * this.vxArr[i];
-            if (targetBall.x > (GameUtil.toGetAllDeviceMaxWidth() - (targetBall.width * 0.5))
-                || targetBall.x < 0 + (targetBall.width * 0.5)) {
-                this.vxArr[i] *= -1;
-            }
-        }
     };
     MultiGameStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
         if (this.action) {
-            this.toActionBall();
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 memberId: GameConfig.gameId,
                 act: SocketEvent.MEMBER_TO_LEADER,
                 gameStatus: "onMemberUpdate",
-                racing: this.spdArr[GameConfig.gameId - 1].toString()
+                racing: Math.round(Math.random() * 3 + 2)
             });
         }
     };

@@ -69,16 +69,17 @@ module GameUtil {
         return tmpArr;
     }
 
-    export function toSetDeviceData(id:number, data:string):void {
+    export function toSetValueInStr(id:number, value:any, targetStr:string):string {
 
-        var tmpStr:string = "";
-        GameConfig.memberDeviceData.split("|").forEach((item, index)=> {
+        var tmpStr:string = '';
+        targetStr.split("|").forEach((item, index)=> {
             if (index == id) {
-                item = data;
+                item = value;
             }
-            tmpStr = tmpStr + item + "|";
+            tmpStr = tmpStr + item.toString() + "|";
         });
-        GameConfig.memberDeviceData = tmpStr.slice(0, -1);
+
+        return tmpStr.slice(0, -1);
     }
 
     export function toGetDeviceData():Array<any> {
@@ -88,32 +89,6 @@ module GameUtil {
             deviceData.push(GameUtil.toSwapStrToNumberArr(item, ","));
         });
         return deviceData;
-    }
-
-    export function toSetRaceData(id:number, value:number):void {
-
-        var raceData:Array<any> = GameConfig.memberRacingData.split("|");
-        raceData[id] = value;
-
-        GameConfig.memberRacingData = "";
-        raceData.forEach((item, index)=> {
-            GameConfig.memberRacingData = GameConfig.memberRacingData + item + "|";
-        });
-
-        GameConfig.memberRacingData = GameConfig.memberRacingData.slice(0, -1);
-    }
-
-    export function toSetMemberStatus(id:number, value:number):void {
-
-        var memberArr:Array<any> = GameConfig.channelMembers.split("|");
-        memberArr[id] = value;
-
-        GameConfig.channelMembers = '';
-        memberArr.forEach(item=> {
-            GameConfig.channelMembers = GameConfig.channelMembers + item.toString() + "|";
-        });
-
-        GameConfig.channelMembers = GameConfig.channelMembers.slice(0, -1);
     }
 
     export function toGetMemberStatus(id:number):number {
@@ -143,10 +118,11 @@ module GameUtil {
                 total += 1;
             }
         });
-
         return total == GameConfig.totalMembers ? true : false;
     }
 
+
+    /* Game */
     export function toGetDeviceStartX(id:number):number {
 
         var targetX:number = 0;
