@@ -14,6 +14,11 @@ class GameConfig extends PIXI.Container {
     public static isWaiting:boolean;
     public static isChannelLocked:boolean;
 
+    public static playerStatus:Array<any>;
+    public static playerDeviceWidth:Array<any>;
+    public static playerDeviceHeight:Array<any>;
+    public static playerRacingIndex:Array<any>;
+
     public static channelMembers:string;
     public static memberDeviceData:string;
     public static memberRacingData:string;
@@ -48,11 +53,17 @@ class GameConfig extends PIXI.Container {
 
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
         GameConfig.channelMembers = '0|0|0|0';
-        //GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
-        GameConfig.memberDeviceData = '360,640|320,568|0,0|0,0';
+        GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
+        //GameConfig.memberDeviceData = '360,640|320,568|0,0|0,0';
         GameConfig.memberRacingData = '0|0|0|0';
 
         GameConfig.memberData = [];
+
+        GameConfig.playerStatus = [0, 0, 0, 0];
+        GameConfig.playerDeviceWidth = [0, 0, 0, 0];
+        GameConfig.playerDeviceHeight = [0, 0, 0, 0];
+        GameConfig.playerRacingIndex = [0, 0, 0, 0];
+
     }
 
 
@@ -235,12 +246,16 @@ class GameConfig extends PIXI.Container {
                         case "memberAction":
 
                             GameConfig.memberRacingData = result.racing;
+                            var buffer:any = setTimeout(()=> {
+                                this.emit(GameEvent.ON_GAME_UPDATE, {
+                                    type: GameEvent.ON_GAME_UPDATE,
+                                    status: "memberAction",
+                                    racing: GameConfig.memberRacingData,
+                                    count: result.count
+                                });
 
-                            this.emit(GameEvent.ON_GAME_UPDATE, {
-                                type: GameEvent.ON_GAME_UPDATE,
-                                status: "memberAction",
-                                racing: GameConfig.memberRacingData
-                            });
+                                if (buffer) window.clearTimeout(buffer);
+                            }, 1000);
                             break;
 
                         case "stopGame":
@@ -294,7 +309,8 @@ class GameConfig extends PIXI.Container {
                                 key: GameConfig.channelKey,
                                 act: SocketEvent.UPDATE_GAME,
                                 gameStatus: "memberAction",
-                                racing: GameConfig.memberRacingData
+                                racing: GameConfig.memberRacingData,
+                                count: null
                             });
                             break;
                     }

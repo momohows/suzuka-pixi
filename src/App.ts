@@ -32,8 +32,8 @@ module App {
         GameConfig.channelKey = Util.toGetParam("key");
         if (GameConfig.channelKey == "" || /[A-Za-z0-9]{8}/.test(GameConfig.channelKey) == false) {
 
-            toCreatePage(0, 0);
-            //toCreatePage(3, 1);
+            //toCreatePage(0, 0);
+            toCreatePage(3, 1);
 
         } else {
 
@@ -78,8 +78,7 @@ module App {
     /**
      * Resource
      * */
-    var RES:GameRes;
-
+    export var RES:GameRes;
     function toLoadResConfig():void {
 
         RES = GameRes.instance();

@@ -38,12 +38,12 @@ module GameUtil {
             }, 1000)
         }
 
-        private toReset():void {
+        public toReset():void {
             this.toStop();
             this.toCreateElement(this.repeat);
         }
 
-        private toStop():void {
+        public toStop():void {
             window.clearInterval(this.ticker);
             this.ticker = null;
         }
@@ -67,6 +67,13 @@ module GameUtil {
             tmpArr.push(+item);
         });
         return tmpArr;
+    }
+
+    export function toSwapArrayToStr(arr:Array<any>):string {
+
+        console.dir(typeof GameConfig.playerStatus);
+
+        return "";
     }
 
     export function toSetValueInStr(id:number, value:any, targetStr:string):string {
@@ -155,7 +162,7 @@ module GameUtil {
         return w;
     }
 
-    export function toFittingElementOnRate(element:any, parent:any):void {
+    export function toFixElementByRate(element:any, parent:any):void {
 
         var wRate:number = parent.width / element.width;
         var hRate:number = parent.height / element.height;

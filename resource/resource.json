@@ -44,8 +44,20 @@
           "url": "resource/assets/game/game_bg.jpg"
         },
         {
+          "name": "track",
+          "url": "resource/assets/game/track.png"
+        },
+        {
           "name": "test_track",
           "url": "resource/assets/game/test_track.png"
+        },
+        {
+          "name": "race_data",
+          "url": "resource/assets/game/race_data.json"
+        },
+        {
+          "name": "race_data_center",
+          "url": "resource/assets/game/race_data_center.json"
         }
       ]
     },

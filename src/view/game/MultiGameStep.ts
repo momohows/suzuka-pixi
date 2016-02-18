@@ -5,13 +5,12 @@
 /// <reference path="../../abstract/AbstractStepView.ts"/>
 /// <reference path="../../utils/FrameUtil.ts"/>
 /// <reference path="../../utils/CreateUtil.ts"/>
-/// <reference path="./GameContainer.ts"/>
-/// <reference path="./RaceTrack.ts"/>
+/// <reference path="./ScoreBoard.ts"/>
+/// <reference path="./RacingTrack.ts"/>
+/// <reference path="./HitArea.ts"/>
 
 class MultiGameStep extends AbstractStepView {
 
-    private action:boolean;
-    private gameScene:string;
 
     constructor(name:string, resources:Object) {
 
@@ -29,15 +28,11 @@ class MultiGameStep extends AbstractStepView {
 
     public toCreateElements():void {
 
-        this.action = false;
-        this.gameScene = "";
-
         this.toCreateGame();
         super.toCreateElements();
     }
 
     private onGameConfigStatus(event:any) {
-
 
         switch (event.status) {
 
@@ -52,19 +47,15 @@ class MultiGameStep extends AbstractStepView {
                 break;
 
             case "startGame":
-                this.action = true;
+                this.toUpdate();
                 break;
 
             case "memberAction":
-                //console.clear();
-                //console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
-                //this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
                 break;
         }
     }
 
 
-    /* Game Logic */
     private gameCownDown:GameUtil.CountDown;
 
     private toCreateCountDown():void {
@@ -86,57 +77,111 @@ class MultiGameStep extends AbstractStepView {
 
         } else {
 
+            this.gameCownDown.toStop();
+            this.gameCownDown = null;
+
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 act: SocketEvent.UPDATE_GAME,
                 gameStatus: "startGame"
             });
+
         }
     }
 
 
-    //
-    private gameCon:GameContainer;
-    private raceTrack:RaceTrack;
-    private conRange:PIXI.Rectangle;
-
+    /**
+     * CreateGame
+     **/
+    private dataIndex:number = 0;
+    private gameCon:PIXI.Container;
 
     private toCreateGame():void {
 
-        this.gameCon = new GameContainer(this.resources);
+        this.gameCon = new PIXI.Container();
         this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
         this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
         this.addChild(this.gameCon);
+
+        this.toCreateScoreBoard();
+        this.toCreateHitArea();
     }
+
+    /* ========================================================= */
+
+
+    /**
+     * HitArea
+     **/
+    private hitRect:HitArea;
+
+    private toCreateHitArea():void {
+
+        this.hitRect = new HitArea();
+        this.addChild(this.hitRect);
+    }
+
+    /* ========================================================= */
+
+
+    /**
+     * ScoreBoard
+     **/
+    private scoreBoard:ScoreBoard;
+
+    private toCreateScoreBoard():void {
+
+        this.scoreBoard = new ScoreBoard();
+        this.addChild(this.scoreBoard);
+    }
+
+    /* ========================================================= */
 
 
     public toUpdate():void {
 
         super.toUpdate();
-        if (this.action) {
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.MEMBER_TO_LEADER,
-                gameStatus: "onMemberUpdate",
-                racing: Math.round(Math.random() * 3 + 2)
-            });
-        }
+        console.log("index:" + this.hitRect.getIndex(0));
+
+        /*App.gameConfig.toConnectSocket({
+            key: GameConfig.channelKey,
+            memberId: GameConfig.gameId,
+            act: SocketEvent.MEMBER_TO_LEADER,
+            gameStatus: "onMemberUpdate",
+            dataIndex: this.dataIndex.toFixed(0)
+        });*/
+
     }
 
     public onTransitionComplete(type:string, stepid:number = -1, pid:number = -1):void {
 
-        super.onTransitionComplete(type, stepid, pid);
+        TweenMax.killTweensOf(this);
         if (type == "TRANSITION_IN_COMPLETE") {
-
+            this.toUpdate();
+            /*if (!App.gameConfig) return;
             App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 memberId: GameConfig.gameId,
                 act: SocketEvent.MEMBER_TO_LEADER,
-                gameStatus: "onMemberReady",
+                gameStatus: "onMemberReady"
+            });*/
+
+            this.emit(ViewEvent.TRANSITION_IN_COMPLETE, {
+                type: ViewEvent.TRANSITION_IN_COMPLETE
             });
         }
+
+        if (type == "TRANSITION_OUT_COMPLETE") {
+
+            this.toRemove();
+            this.emit(ViewEvent.TRANSITION_OUT_COMPLETE, {
+                stepid: stepid,
+                pid: pid,
+                type: ViewEvent.TRANSITION_OUT_COMPLETE
+            })
+        }
+
     }
 
 

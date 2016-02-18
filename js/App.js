@@ -254,10 +254,14 @@ var GameConfig = (function (_super) {
         GameConfig.isChannelLocked = false;
         /* 0:無人，1:已加入Channel，2:已準備好可開始遊戲 */
         GameConfig.channelMembers = '0|0|0|0';
-        //GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
-        GameConfig.memberDeviceData = '360,640|320,568|0,0|0,0';
+        GameConfig.memberDeviceData = '0,0|0,0|0,0|0,0';
+        //GameConfig.memberDeviceData = '360,640|320,568|0,0|0,0';
         GameConfig.memberRacingData = '0|0|0|0';
         GameConfig.memberData = [];
+        GameConfig.playerStatus = [0, 0, 0, 0];
+        GameConfig.playerDeviceWidth = [0, 0, 0, 0];
+        GameConfig.playerDeviceHeight = [0, 0, 0, 0];
+        GameConfig.playerRacingIndex = [0, 0, 0, 0];
     };
     GameConfig.prototype.toInit = function () {
         this.toReset();
@@ -277,6 +281,7 @@ var GameConfig = (function (_super) {
         this.socketConnector.toSendMessage(msg);
     };
     GameConfig.prototype.onSocketStatus = function (event) {
+        var _this = this;
         App.loadingUI.toTransitionOut();
         //console.log("SocketStatus:" + event.type);
         switch (event.type) {
@@ -386,11 +391,16 @@ var GameConfig = (function (_super) {
                             break;
                         case "memberAction":
                             GameConfig.memberRacingData = result.racing;
-                            this.emit(GameEvent.ON_GAME_UPDATE, {
-                                type: GameEvent.ON_GAME_UPDATE,
-                                status: "memberAction",
-                                racing: GameConfig.memberRacingData
-                            });
+                            var buffer = setTimeout(function () {
+                                _this.emit(GameEvent.ON_GAME_UPDATE, {
+                                    type: GameEvent.ON_GAME_UPDATE,
+                                    status: "memberAction",
+                                    racing: GameConfig.memberRacingData,
+                                    count: result.count
+                                });
+                                if (buffer)
+                                    window.clearTimeout(buffer);
+                            }, 1000);
                             break;
                         case "stopGame":
                             this.emit(GameEvent.ON_GAME_UPDATE, {
@@ -431,7 +441,8 @@ var GameConfig = (function (_super) {
                                 key: GameConfig.channelKey,
                                 act: SocketEvent.UPDATE_GAME,
                                 gameStatus: "memberAction",
-                                racing: GameConfig.memberRacingData
+                                racing: GameConfig.memberRacingData,
+                                count: null
                             });
                             break;
                     }
@@ -1139,6 +1150,11 @@ var GameUtil;
         return tmpArr;
     }
     GameUtil.toSwapStrToNumberArr = toSwapStrToNumberArr;
+    function toSwapArrayToStr(arr) {
+        console.dir(typeof GameConfig.playerStatus);
+        return "";
+    }
+    GameUtil.toSwapArrayToStr = toSwapArrayToStr;
     function toSetValueInStr(id, value, targetStr) {
         var tmpStr = '';
         targetStr.split("|").forEach(function (item, index) {
@@ -1214,13 +1230,13 @@ var GameUtil;
         return w;
     }
     GameUtil.toGetAllDeviceMaxWidth = toGetAllDeviceMaxWidth;
-    function toFittingElementOnRate(element, parent) {
+    function toFixElementByRate(element, parent) {
         var wRate = parent.width / element.width;
         var hRate = parent.height / element.height;
         var targetRate = wRate < hRate ? wRate : hRate;
         element.scale.x = element.scale.y = targetRate - 0.02;
     }
-    GameUtil.toFittingElementOnRate = toFittingElementOnRate;
+    GameUtil.toFixElementByRate = toFixElementByRate;
 })(GameUtil || (GameUtil = {}));
 /**
  * Created by susanph.huang on 2015/12/29.
@@ -1672,68 +1688,72 @@ var SingleGameStep = (function (_super) {
     return SingleGameStep;
 })(AbstractStepView);
 /**
- * Created by susanph.huang on 2016/1/27.
+ * Created by susanph.huang on 2016/2/16.
  */
-var GameContainer = (function (_super) {
-    __extends(GameContainer, _super);
-    function GameContainer(resource) {
+var ScoreBoard = (function (_super) {
+    __extends(ScoreBoard, _super);
+    function ScoreBoard() {
         _super.call(this);
-        this.resource = resource;
-        this.toCreateGuide();
-        this.toCreateElements();
     }
-    GameContainer.prototype.toCreateElements = function () {
-        this.deviceRange = new PIXI.Rectangle(0, 0, GameUtil.toGetAllDeviceMaxWidth(), GameUtil.toGetAllDeviceMinHeight());
-        this.racingCon = new PIXI.Container();
-        this.addChild(this.racingCon);
-        this.raceTrack = new PIXI.Sprite(this.resource["test_track"].texture);
-        this.raceTrack.anchor.x = 0.5;
-        this.raceTrack.x = this.raceTrack.width * 0.5;
-        this.raceTrack.anchor.y = 0.5;
-        this.raceTrack.y = this.raceTrack.height * 0.5;
-        this.racingCon.addChild(this.raceTrack);
-        GameUtil.toFittingElementOnRate(this.racingCon, this.deviceRange);
-        this.racingCon.x = (this.deviceRange.width - this.racingCon.width) * 0.5;
-        this.racingCon.y = (this.deviceRange.height - this.racingCon.height) * 0.5;
-    };
-    GameContainer.prototype.toCreateGuide = function () {
-        var _this = this;
-        this.guideCon = new PIXI.Container();
-        this.addChild(this.guideCon);
-        GameUtil.toGetDeviceData().forEach(function (item, index) {
-            var w = item[0];
-            if (w > 0) {
-                var tmpBg = new PIXI.Graphics();
-                tmpBg.beginFill(0x330000, 1);
-                tmpBg.drawRect(0, 0, w, GameUtil.toGetAllDeviceMinHeight());
-                tmpBg.endFill();
-                var bgTitle = new PIXI.Text("DEVICE" + (index), {
-                    font: '20px Arial',
-                    fill: 0xffffff,
-                    align: 'center'
-                });
-                bgTitle.x = (tmpBg.width - bgTitle.width) * 0.5;
-                bgTitle.y = tmpBg.height - bgTitle.height - 80;
-                tmpBg.addChild(bgTitle);
-                tmpBg.x = index == 0 ? 0 : GameUtil.toGetDeviceStartX(index);
-                _this.guideCon.addChild(tmpBg);
-            }
-        });
-    };
-    return GameContainer;
+    return ScoreBoard;
 })(PIXI.Container);
 /**
- * Created by susanph.huang on 2016/1/28.
+ * Created by susanph.huang on 2016/2/16.
  */
-var RaceTrack = (function (_super) {
-    __extends(RaceTrack, _super);
-    function RaceTrack() {
+var RacingTrack = (function (_super) {
+    __extends(RacingTrack, _super);
+    function RacingTrack() {
         _super.call(this);
-        this.toCreateElements();
     }
-    RaceTrack.prototype.toCreateElements = function () {
+    return RacingTrack;
+})(PIXI.Container);
+/**
+ * Created by susanph.huang on 2016/2/17.
+ */
+var HitArea = (function (_super) {
+    __extends(HitArea, _super);
+    function HitArea() {
+        _super.call(this);
+        this.toCreateElement();
+    }
+    HitArea.prototype.toCreateElement = function () {
+        this.maxVX = 5;
+        this.minVX = 0.1;
+        this.vx = 0;
+        this.ax = 0.3;
+        this.friction = 0.98;
+        this.index = 0;
+        this.alphaRect = new PIXI.Graphics();
+        this.alphaRect.beginFill(0x000000, 0.3);
+        this.alphaRect.drawRect(0, 0, Config.stageWidth, Config.stageHeight);
+        this.alphaRect.endFill();
+        this.addChild(this.alphaRect);
+        this.toActive();
     };
-    return RaceTrack;
+    HitArea.prototype.toActive = function () {
+        if (this.alphaRect) {
+            CreateUtil.toActivateItem(this.alphaRect, this.onAlphaRectStatus.bind(this));
+            this.toUpdate();
+        }
+    };
+    HitArea.prototype.onAlphaRectStatus = function (event) {
+        this.vx += this.ax;
+        if (this.vx > this.maxVX) {
+            this.vx = this.maxVX;
+        }
+    };
+    HitArea.prototype.toUpdate = function () {
+        requestAnimationFrame(this.toUpdate.bind(this));
+        this.vx *= this.friction;
+        if (this.vx <= this.minVX) {
+            this.vx = 0;
+        }
+        this.index += this.vx;
+    };
+    HitArea.prototype.getIndex = function (slpit) {
+        return +this.index.toFixed(slpit);
+    };
+    return HitArea;
 })(PIXI.Container);
 /**
  * Created by susanph.huang on 2015/12/29.
@@ -1741,12 +1761,17 @@ var RaceTrack = (function (_super) {
 /// <reference path="../../abstract/AbstractStepView.ts"/>
 /// <reference path="../../utils/FrameUtil.ts"/>
 /// <reference path="../../utils/CreateUtil.ts"/>
-/// <reference path="./GameContainer.ts"/>
-/// <reference path="./RaceTrack.ts"/>
+/// <reference path="./ScoreBoard.ts"/>
+/// <reference path="./RacingTrack.ts"/>
+/// <reference path="./HitArea.ts"/>
 var MultiGameStep = (function (_super) {
     __extends(MultiGameStep, _super);
     function MultiGameStep(name, resources) {
         _super.call(this, name, resources);
+        /**
+         * CreateGame
+         **/
+        this.dataIndex = 0;
     }
     MultiGameStep.prototype.toRemove = function () {
         _super.prototype.toRemove.call(this);
@@ -1755,8 +1780,6 @@ var MultiGameStep = (function (_super) {
         _super.prototype.onResize.call(this, event);
     };
     MultiGameStep.prototype.toCreateElements = function () {
-        this.action = false;
-        this.gameScene = "";
         this.toCreateGame();
         _super.prototype.toCreateElements.call(this);
     };
@@ -1771,12 +1794,9 @@ var MultiGameStep = (function (_super) {
                 console.log("countDown:" + event.countDown);
                 break;
             case "startGame":
-                this.action = true;
+                this.toUpdate();
                 break;
             case "memberAction":
-                //console.clear();
-                //console.log(GameUtil.toSwapStrToNumberArr(event.racing, "|")[0]);
-                //this.spdArr = GameUtil.toSwapStrToNumberArr(event.racing, "|");
                 break;
         }
     };
@@ -1794,6 +1814,8 @@ var MultiGameStep = (function (_super) {
             });
         }
         else {
+            this.gameCownDown.toStop();
+            this.gameCownDown = null;
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 act: SocketEvent.UPDATE_GAME,
@@ -1802,34 +1824,57 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateGame = function () {
-        this.gameCon = new GameContainer(this.resources);
+        this.gameCon = new PIXI.Container();
         this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
         this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
         this.addChild(this.gameCon);
+        this.toCreateScoreBoard();
+        this.toCreateHitArea();
     };
+    MultiGameStep.prototype.toCreateHitArea = function () {
+        this.hitRect = new HitArea();
+        this.addChild(this.hitRect);
+    };
+    MultiGameStep.prototype.toCreateScoreBoard = function () {
+        this.scoreBoard = new ScoreBoard();
+        this.addChild(this.scoreBoard);
+    };
+    /* ========================================================= */
     MultiGameStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
-        if (this.action) {
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.MEMBER_TO_LEADER,
-                gameStatus: "onMemberUpdate",
-                racing: Math.round(Math.random() * 3 + 2)
-            });
-        }
+        console.log("index:" + this.hitRect.getIndex(0));
+        /*App.gameConfig.toConnectSocket({
+            key: GameConfig.channelKey,
+            memberId: GameConfig.gameId,
+            act: SocketEvent.MEMBER_TO_LEADER,
+            gameStatus: "onMemberUpdate",
+            dataIndex: this.dataIndex.toFixed(0)
+        });*/
     };
     MultiGameStep.prototype.onTransitionComplete = function (type, stepid, pid) {
         if (stepid === void 0) { stepid = -1; }
         if (pid === void 0) { pid = -1; }
-        _super.prototype.onTransitionComplete.call(this, type, stepid, pid);
+        TweenMax.killTweensOf(this);
         if (type == "TRANSITION_IN_COMPLETE") {
+            this.toUpdate();
+            /*if (!App.gameConfig) return;
             App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 memberId: GameConfig.gameId,
                 act: SocketEvent.MEMBER_TO_LEADER,
                 gameStatus: "onMemberReady"
+            });*/
+            this.emit(ViewEvent.TRANSITION_IN_COMPLETE, {
+                type: ViewEvent.TRANSITION_IN_COMPLETE
+            });
+        }
+        if (type == "TRANSITION_OUT_COMPLETE") {
+            this.toRemove();
+            this.emit(ViewEvent.TRANSITION_OUT_COMPLETE, {
+                stepid: stepid,
+                pid: pid,
+                type: ViewEvent.TRANSITION_OUT_COMPLETE
             });
         }
     };
@@ -2058,7 +2103,8 @@ var App;
     function toCheckUrl() {
         GameConfig.channelKey = Util.toGetParam("key");
         if (GameConfig.channelKey == "" || /[A-Za-z0-9]{8}/.test(GameConfig.channelKey) == false) {
-            toCreatePage(0, 0);
+            //toCreatePage(0, 0);
+            toCreatePage(3, 1);
         }
         else {
             GameConfig.gameActor = "MEMBER";
@@ -2085,26 +2131,21 @@ var App;
         App.loadingUI = new LoadingUI();
         gameScene.addChild(App.loadingUI);
     }
-    /* ============================================= */
-    /**
-     * Resource
-     * */
-    var RES;
     function toLoadResConfig() {
-        RES = GameRes.instance();
-        RES.on(ResourceEvent.CONFIG_COMPLETE, onResConfigComplete);
-        RES.toLoadConfig("resource/resource.json", "resConfig");
+        App.RES = GameRes.instance();
+        App.RES.on(ResourceEvent.CONFIG_COMPLETE, onResConfigComplete);
+        App.RES.toLoadConfig("resource/resource.json", "resConfig");
     }
     function onResConfigComplete() {
-        RES.on(ResourceEvent.GROUP_PROGRESS, onResGroupProgress);
-        RES.on(ResourceEvent.GROUP_COMPLETE, onResGroupComplete);
-        RES.toQueueGroups("preload_assets", 0);
-        RES.toQueueGroups("home_assets", 1);
-        RES.toQueueGroups("start_assets", 2);
-        RES.toQueueGroups("channel_assets", 3);
-        RES.toQueueGroups("game_assets", 4);
-        RES.toQueueGroups("result_assets", 5);
-        RES.toLoadGroup();
+        App.RES.on(ResourceEvent.GROUP_PROGRESS, onResGroupProgress);
+        App.RES.on(ResourceEvent.GROUP_COMPLETE, onResGroupComplete);
+        App.RES.toQueueGroups("preload_assets", 0);
+        App.RES.toQueueGroups("home_assets", 1);
+        App.RES.toQueueGroups("start_assets", 2);
+        App.RES.toQueueGroups("channel_assets", 3);
+        App.RES.toQueueGroups("game_assets", 4);
+        App.RES.toQueueGroups("result_assets", 5);
+        App.RES.toLoadGroup();
     }
     function onResGroupProgress(progress) {
         //console.log("progress:" + progress);
@@ -2153,12 +2194,12 @@ var App;
         }
         if (viewData[id]["isLoaded"] == false) {
             App.loadingUI.toTransitionIn();
-            RES.toQueueGroups(viewData[id]["assetsName"] + "_assets", 0);
-            RES.toLoadGroup();
+            App.RES.toQueueGroups(viewData[id]["assetsName"] + "_assets", 0);
+            App.RES.toLoadGroup();
             return;
         }
         var viewClass = viewData[id]["className"];
-        var viewResources = RES.toGetRes(viewData[id]["assetsName"] + "_assets");
+        var viewResources = App.RES.toGetRes(viewData[id]["assetsName"] + "_assets");
         currentPage = new viewClass(viewData[id]["assetsName"], viewResources, id, stepid);
         currentPage.once(ViewEvent.TRANSITION_IN_COMPLETE, onViewStatus);
         currentPage.once(ViewEvent.TRANSITION_OUT_COMPLETE, onViewStatus);
