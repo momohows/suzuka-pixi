@@ -31,19 +31,17 @@ class HitArea extends PIXI.Container {
         this.index = 0;
 
         this.alphaRect = new PIXI.Graphics();
-        this.alphaRect.beginFill(0x000000, 0.3);
+        this.alphaRect.beginFill(0x000000, 1);
         this.alphaRect.drawRect(0, 0, Config.stageWidth, Config.stageHeight);
         this.alphaRect.endFill();
         this.addChild(this.alphaRect);
 
-        this.toActive();
+        CreateUtil.toActivateItem(this.alphaRect, this.onAlphaRectStatus.bind(this));
+        this.toUpdate();
     }
 
-    private toActive():void {
-
+    private toStop():void {
         if (this.alphaRect) {
-            CreateUtil.toActivateItem(this.alphaRect, this.onAlphaRectStatus.bind(this));
-            this.toUpdate();
         }
     }
 
@@ -63,7 +61,6 @@ class HitArea extends PIXI.Container {
         if (this.vx <= this.minVX) {
             this.vx = 0;
         }
-
 
         this.index += this.vx;
     }

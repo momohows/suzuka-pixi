@@ -56,12 +56,12 @@ class MultiGameStep extends AbstractStepView {
     }
 
 
-    private gameCownDown:GameUtil.CountDown;
+    private countDown:GameUtil.CountDown;
 
     private toCreateCountDown():void {
 
-        this.gameCownDown = new GameUtil.CountDown(3);
-        this.gameCownDown.on(GameEvent.ON_COUNTDOWN, this.onCountDown.bind(this));
+        this.countDown = new GameUtil.CountDown(3);
+        this.countDown.on(GameEvent.ON_COUNTDOWN, this.onCountDown.bind(this));
     }
 
     private onCountDown(event:any):void {
@@ -77,8 +77,8 @@ class MultiGameStep extends AbstractStepView {
 
         } else {
 
-            this.gameCownDown.toStop();
-            this.gameCownDown = null;
+            this.countDown.toStop();
+            this.countDown = null;
 
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
@@ -93,15 +93,65 @@ class MultiGameStep extends AbstractStepView {
     /**
      * CreateGame
      **/
-    private dataIndex:number = 0;
+
+    private deviceRange:PIXI.Rectangle;
     private gameCon:PIXI.Container;
+    private trackCon:PIXI.Container;
+    private raceTrack:PIXI.Sprite;
+    private raceJsonData:Array<any>;
+    private raceData:Array<any>;
+    private car:PIXI.Graphics;
+
+    private dataIndex:number;
 
     private toCreateGame():void {
 
+        var tmpStr:string = Config.stageWidth.toString() + "," + Config.stageHeight.toString();
+        GameConfig.memberDeviceData = GameUtil.toSetValueInStr(0, tmpStr, GameConfig.memberDeviceData);
+        this.deviceRange = new PIXI.Rectangle(0, 0, GameUtil.toGetAllDeviceMaxWidth(), GameUtil.toGetAllDeviceMinHeight());
+
         this.gameCon = new PIXI.Container();
         this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
-        this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
         this.addChild(this.gameCon);
+
+        this.trackCon = new PIXI.Container();
+        this.gameCon.addChild(this.trackCon);
+
+        this.raceTrack = new PIXI.Sprite(this.resources["track"].texture);
+        this.raceTrack.anchor.x = 0.5;
+        this.raceTrack.anchor.y = 0.5;
+        this.raceTrack.x = this.raceTrack.width * 0.5;
+        this.raceTrack.y = this.raceTrack.height * 0.5;
+        this.trackCon.addChild(this.raceTrack);
+
+        GameUtil.toFixElementByRate(this.trackCon, this.deviceRange);
+        this.trackCon.x = (this.deviceRange.width - this.trackCon.width) * 0.5;
+        this.trackCon.y = (this.deviceRange.height - this.trackCon.height) * 0.5;
+
+
+        this.raceJsonData = this.resources["race_data"].data;
+        this.raceData = [];
+        for (var i:number = 0; i < this.raceJsonData["car1"].length; i++) {
+
+            var localPT:PIXI.Point = new PIXI.Point(this.raceJsonData["car1"][i].x, this.raceJsonData["car1"][i].y);
+            var globalPT:PIXI.Point = this.trackCon.toGlobal(localPT);
+
+            var tmpObj:Object = {};
+            tmpObj["position"] = globalPT;
+            tmpObj["rotation"] = this.raceJsonData["car1"][i].rotation;
+            this.raceData.push(tmpObj);
+        }
+
+
+        this.car = new PIXI.Graphics;
+        this.car.beginFill(0xff0000, 0.7);
+        this.car.drawRect(-10, -20, 20, 40);
+        this.car.endFill();
+
+        this.car.x = this.raceData[0]["position"].x;
+        this.car.y = this.raceData[0]["position"].y;
+        this.gameCon.addChild(this.car);
+
 
         this.toCreateScoreBoard();
         this.toCreateHitArea();
@@ -118,6 +168,7 @@ class MultiGameStep extends AbstractStepView {
     private toCreateHitArea():void {
 
         this.hitRect = new HitArea();
+        this.hitRect.alpha = 0;
         this.addChild(this.hitRect);
     }
 
@@ -130,7 +181,7 @@ class MultiGameStep extends AbstractStepView {
     private scoreBoard:ScoreBoard;
 
     private toCreateScoreBoard():void {
-
+        console.log((Math.PI * 2));
         this.scoreBoard = new ScoreBoard();
         this.addChild(this.scoreBoard);
     }
@@ -141,15 +192,35 @@ class MultiGameStep extends AbstractStepView {
     public toUpdate():void {
 
         super.toUpdate();
-        console.log("index:" + this.hitRect.getIndex(0));
+
+        this.dataIndex = this.hitRect.getIndex(0);
+        if (this.car) {
+
+            if (this.dataIndex > this.raceData.length - 1) return;
+            var targetX:number = this.raceData[this.dataIndex]["position"].x;
+            var targetY:number = this.raceData[this.dataIndex]["position"].y;
+
+            var dx:number = Math.floor(targetX - this.car.x);
+            var dy:number = Math.floor(targetY - this.car.y);
+            var targetR:number = Math.atan2(dy, dx) * 180 / Math.PI * 2;
+            targetR = targetR / 100;
+            //console.log(this.raceData[this.dataIndex]["rotation"]);
+            this.car.rotation = (this.raceData[this.dataIndex]["rotation"] * Math.PI / 180);
+
+            TweenMax.to(this.car, 0.5, {
+                x: targetX,
+                y: targetY,
+                ease: Quart.easeOut
+            });
+        }
 
         /*App.gameConfig.toConnectSocket({
-            key: GameConfig.channelKey,
-            memberId: GameConfig.gameId,
-            act: SocketEvent.MEMBER_TO_LEADER,
-            gameStatus: "onMemberUpdate",
-            dataIndex: this.dataIndex.toFixed(0)
-        });*/
+         key: GameConfig.channelKey,
+         memberId: GameConfig.gameId,
+         act: SocketEvent.MEMBER_TO_LEADER,
+         gameStatus: "onMemberUpdate",
+         dataIndex: this.dataIndex.toFixed(0)
+         });*/
 
     }
 
@@ -157,15 +228,16 @@ class MultiGameStep extends AbstractStepView {
 
         TweenMax.killTweensOf(this);
         if (type == "TRANSITION_IN_COMPLETE") {
+
             this.toUpdate();
             /*if (!App.gameConfig) return;
-            App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.MEMBER_TO_LEADER,
-                gameStatus: "onMemberReady"
-            });*/
+             App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
+             App.gameConfig.toConnectSocket({
+             key: GameConfig.channelKey,
+             memberId: GameConfig.gameId,
+             act: SocketEvent.MEMBER_TO_LEADER,
+             gameStatus: "onMemberReady"
+             });*/
 
             this.emit(ViewEvent.TRANSITION_IN_COMPLETE, {
                 type: ViewEvent.TRANSITION_IN_COMPLETE

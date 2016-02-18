@@ -1724,16 +1724,15 @@ var HitArea = (function (_super) {
         this.friction = 0.98;
         this.index = 0;
         this.alphaRect = new PIXI.Graphics();
-        this.alphaRect.beginFill(0x000000, 0.3);
+        this.alphaRect.beginFill(0x000000, 1);
         this.alphaRect.drawRect(0, 0, Config.stageWidth, Config.stageHeight);
         this.alphaRect.endFill();
         this.addChild(this.alphaRect);
-        this.toActive();
+        CreateUtil.toActivateItem(this.alphaRect, this.onAlphaRectStatus.bind(this));
+        this.toUpdate();
     };
-    HitArea.prototype.toActive = function () {
+    HitArea.prototype.toStop = function () {
         if (this.alphaRect) {
-            CreateUtil.toActivateItem(this.alphaRect, this.onAlphaRectStatus.bind(this));
-            this.toUpdate();
         }
     };
     HitArea.prototype.onAlphaRectStatus = function (event) {
@@ -1768,10 +1767,6 @@ var MultiGameStep = (function (_super) {
     __extends(MultiGameStep, _super);
     function MultiGameStep(name, resources) {
         _super.call(this, name, resources);
-        /**
-         * CreateGame
-         **/
-        this.dataIndex = 0;
     }
     MultiGameStep.prototype.toRemove = function () {
         _super.prototype.toRemove.call(this);
@@ -1801,8 +1796,8 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateCountDown = function () {
-        this.gameCownDown = new GameUtil.CountDown(3);
-        this.gameCownDown.on(GameEvent.ON_COUNTDOWN, this.onCountDown.bind(this));
+        this.countDown = new GameUtil.CountDown(3);
+        this.countDown.on(GameEvent.ON_COUNTDOWN, this.onCountDown.bind(this));
     };
     MultiGameStep.prototype.onCountDown = function (event) {
         if (event.count <= 3) {
@@ -1814,8 +1809,8 @@ var MultiGameStep = (function (_super) {
             });
         }
         else {
-            this.gameCownDown.toStop();
-            this.gameCownDown = null;
+            this.countDown.toStop();
+            this.countDown = null;
             App.gameConfig.toConnectSocket({
                 key: GameConfig.channelKey,
                 act: SocketEvent.UPDATE_GAME,
@@ -1824,32 +1819,81 @@ var MultiGameStep = (function (_super) {
         }
     };
     MultiGameStep.prototype.toCreateGame = function () {
+        var tmpStr = Config.stageWidth.toString() + "," + Config.stageHeight.toString();
+        GameConfig.memberDeviceData = GameUtil.toSetValueInStr(0, tmpStr, GameConfig.memberDeviceData);
+        this.deviceRange = new PIXI.Rectangle(0, 0, GameUtil.toGetAllDeviceMaxWidth(), GameUtil.toGetAllDeviceMinHeight());
         this.gameCon = new PIXI.Container();
         this.gameCon.x = GameConfig.gameId - 1 == 0 ? 0 : -1 * GameUtil.toGetDeviceStartX(GameConfig.gameId - 1);
-        this.gameCon.y = (Config.stageHeight - this.gameCon.height) * 0.5;
         this.addChild(this.gameCon);
+        this.trackCon = new PIXI.Container();
+        this.gameCon.addChild(this.trackCon);
+        this.raceTrack = new PIXI.Sprite(this.resources["track"].texture);
+        this.raceTrack.anchor.x = 0.5;
+        this.raceTrack.anchor.y = 0.5;
+        this.raceTrack.x = this.raceTrack.width * 0.5;
+        this.raceTrack.y = this.raceTrack.height * 0.5;
+        this.trackCon.addChild(this.raceTrack);
+        GameUtil.toFixElementByRate(this.trackCon, this.deviceRange);
+        this.trackCon.x = (this.deviceRange.width - this.trackCon.width) * 0.5;
+        this.trackCon.y = (this.deviceRange.height - this.trackCon.height) * 0.5;
+        this.raceJsonData = this.resources["race_data"].data;
+        this.raceData = [];
+        for (var i = 0; i < this.raceJsonData["car1"].length; i++) {
+            var localPT = new PIXI.Point(this.raceJsonData["car1"][i].x, this.raceJsonData["car1"][i].y);
+            var globalPT = this.trackCon.toGlobal(localPT);
+            var tmpObj = {};
+            tmpObj["position"] = globalPT;
+            tmpObj["rotation"] = this.raceJsonData["car1"][i].rotation;
+            this.raceData.push(tmpObj);
+        }
+        this.car = new PIXI.Graphics;
+        this.car.beginFill(0xff0000, 0.7);
+        this.car.drawRect(-10, -20, 20, 40);
+        this.car.endFill();
+        this.car.x = this.raceData[0]["position"].x;
+        this.car.y = this.raceData[0]["position"].y;
+        this.gameCon.addChild(this.car);
         this.toCreateScoreBoard();
         this.toCreateHitArea();
     };
     MultiGameStep.prototype.toCreateHitArea = function () {
         this.hitRect = new HitArea();
+        this.hitRect.alpha = 0;
         this.addChild(this.hitRect);
     };
     MultiGameStep.prototype.toCreateScoreBoard = function () {
+        console.log((Math.PI * 2));
         this.scoreBoard = new ScoreBoard();
         this.addChild(this.scoreBoard);
     };
     /* ========================================================= */
     MultiGameStep.prototype.toUpdate = function () {
         _super.prototype.toUpdate.call(this);
-        console.log("index:" + this.hitRect.getIndex(0));
+        this.dataIndex = this.hitRect.getIndex(0);
+        if (this.car) {
+            if (this.dataIndex > this.raceData.length - 1)
+                return;
+            var targetX = this.raceData[this.dataIndex]["position"].x;
+            var targetY = this.raceData[this.dataIndex]["position"].y;
+            var dx = Math.floor(targetX - this.car.x);
+            var dy = Math.floor(targetY - this.car.y);
+            var targetR = Math.atan2(dy, dx) * 180 / Math.PI * 2;
+            targetR = targetR / 100;
+            //console.log(this.raceData[this.dataIndex]["rotation"]);
+            this.car.rotation = (this.raceData[this.dataIndex]["rotation"] * Math.PI / 180);
+            TweenMax.to(this.car, 0.5, {
+                x: targetX,
+                y: targetY,
+                ease: Quart.easeOut
+            });
+        }
         /*App.gameConfig.toConnectSocket({
-            key: GameConfig.channelKey,
-            memberId: GameConfig.gameId,
-            act: SocketEvent.MEMBER_TO_LEADER,
-            gameStatus: "onMemberUpdate",
-            dataIndex: this.dataIndex.toFixed(0)
-        });*/
+         key: GameConfig.channelKey,
+         memberId: GameConfig.gameId,
+         act: SocketEvent.MEMBER_TO_LEADER,
+         gameStatus: "onMemberUpdate",
+         dataIndex: this.dataIndex.toFixed(0)
+         });*/
     };
     MultiGameStep.prototype.onTransitionComplete = function (type, stepid, pid) {
         if (stepid === void 0) { stepid = -1; }
@@ -1858,13 +1902,13 @@ var MultiGameStep = (function (_super) {
         if (type == "TRANSITION_IN_COMPLETE") {
             this.toUpdate();
             /*if (!App.gameConfig) return;
-            App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
-            App.gameConfig.toConnectSocket({
-                key: GameConfig.channelKey,
-                memberId: GameConfig.gameId,
-                act: SocketEvent.MEMBER_TO_LEADER,
-                gameStatus: "onMemberReady"
-            });*/
+             App.gameConfig.on(GameEvent.ON_GAME_UPDATE, this.onGameConfigStatus.bind(this));
+             App.gameConfig.toConnectSocket({
+             key: GameConfig.channelKey,
+             memberId: GameConfig.gameId,
+             act: SocketEvent.MEMBER_TO_LEADER,
+             gameStatus: "onMemberReady"
+             });*/
             this.emit(ViewEvent.TRANSITION_IN_COMPLETE, {
                 type: ViewEvent.TRANSITION_IN_COMPLETE
             });
@@ -2095,7 +2139,6 @@ var App;
 (function (App) {
     $(document).ready(function () {
         toCrateGame();
-        toLoadResConfig();
     });
     /**
      * 一開始判斷URL有無帶Key參數，若有就是MEMBER
@@ -2126,6 +2169,7 @@ var App;
         });
         toInitConfig();
         toCreateLoadingUI();
+        toLoadResConfig();
     }
     function toCreateLoadingUI() {
         App.loadingUI = new LoadingUI();

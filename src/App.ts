@@ -20,7 +20,6 @@ module App {
     $(document).ready(function () {
 
         toCrateGame();
-        toLoadResConfig();
     });
 
 
@@ -64,6 +63,7 @@ module App {
 
         toInitConfig();
         toCreateLoadingUI();
+        toLoadResConfig();
     }
 
     function toCreateLoadingUI():void {
