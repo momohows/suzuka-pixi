@@ -93,7 +93,6 @@ class MultiGameStep extends AbstractStepView {
     /**
      * CreateGame
      **/
-
     private deviceRange:PIXI.Rectangle;
     private gameCon:PIXI.Container;
     private trackCon:PIXI.Container;
@@ -181,7 +180,6 @@ class MultiGameStep extends AbstractStepView {
     private scoreBoard:ScoreBoard;
 
     private toCreateScoreBoard():void {
-        console.log((Math.PI * 2));
         this.scoreBoard = new ScoreBoard();
         this.addChild(this.scoreBoard);
     }
@@ -193,20 +191,15 @@ class MultiGameStep extends AbstractStepView {
 
         super.toUpdate();
 
-        this.dataIndex = this.hitRect.getIndex(0);
         if (this.car) {
 
+            this.dataIndex = this.hitRect.getIndex(0);
             if (this.dataIndex > this.raceData.length - 1) return;
             var targetX:number = this.raceData[this.dataIndex]["position"].x;
             var targetY:number = this.raceData[this.dataIndex]["position"].y;
+            var targetR:number = this.raceData[this.dataIndex]["rotation"] * Math.PI / 180;//弧度制
 
-            var dx:number = Math.floor(targetX - this.car.x);
-            var dy:number = Math.floor(targetY - this.car.y);
-            var targetR:number = Math.atan2(dy, dx) * 180 / Math.PI * 2;
-            targetR = targetR / 100;
-            //console.log(this.raceData[this.dataIndex]["rotation"]);
-            this.car.rotation = (this.raceData[this.dataIndex]["rotation"] * Math.PI / 180);
-
+            this.car.rotation = targetR;
             TweenMax.to(this.car, 0.5, {
                 x: targetX,
                 y: targetY,

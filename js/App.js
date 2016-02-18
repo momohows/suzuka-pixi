@@ -1862,7 +1862,6 @@ var MultiGameStep = (function (_super) {
         this.addChild(this.hitRect);
     };
     MultiGameStep.prototype.toCreateScoreBoard = function () {
-        console.log((Math.PI * 2));
         this.scoreBoard = new ScoreBoard();
         this.addChild(this.scoreBoard);
     };
@@ -1875,12 +1874,8 @@ var MultiGameStep = (function (_super) {
                 return;
             var targetX = this.raceData[this.dataIndex]["position"].x;
             var targetY = this.raceData[this.dataIndex]["position"].y;
-            var dx = Math.floor(targetX - this.car.x);
-            var dy = Math.floor(targetY - this.car.y);
-            var targetR = Math.atan2(dy, dx) * 180 / Math.PI * 2;
-            targetR = targetR / 100;
-            //console.log(this.raceData[this.dataIndex]["rotation"]);
-            this.car.rotation = (this.raceData[this.dataIndex]["rotation"] * Math.PI / 180);
+            var targetR = this.raceData[this.dataIndex]["rotation"] * Math.PI / 180; //弧度制
+            this.car.rotation = targetR;
             TweenMax.to(this.car, 0.5, {
                 x: targetX,
                 y: targetY,
